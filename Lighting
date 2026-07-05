@@ -1,0 +1,51 @@
+local Library = {}
+
+function Library:CreateWindow(titleText)
+    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+    
+    local Window = Instance.new("Frame", ScreenGui)
+    Window.Size = UDim2.new(0, 500, 0, 350)
+    Window.Position = UDim2.new(0.5, -250, 0.5, -175)
+    Window.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+    Window.BackgroundTransparency = 0.2
+    Window.Active = true
+    Window.Draggable = true
+    
+    local UIStroke = Instance.new("UIStroke", Window)
+    UIStroke.Color = Color3.fromRGB(0, 150, 255)
+    UIStroke.Thickness = 2
+    
+    local TopBar = Instance.new("Frame", Window)
+    TopBar.Size = UDim2.new(1, 0, 0, 30)
+    TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 45)
+    TopBar.BorderSizePixel = 0
+    
+    local Title = Instance.new("TextLabel", TopBar)
+    Title.Size = UDim2.new(1, -70, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Text = titleText
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("ImageButton", TopBar)
+    CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+    CloseBtn.Position = UDim2.new(1, -30, 0, 2)
+    CloseBtn.Image = "rbxassetid://103344771690872"
+    CloseBtn.BackgroundTransparency = 1
+    
+    local MinBtn = Instance.new("ImageButton", TopBar)
+    MinBtn.Size = UDim2.new(0, 25, 0, 25)
+    MinBtn.Position = UDim2.new(1, -60, 0, 2)
+    MinBtn.Image = "rbxassetid://82235228007110"
+    CloseBtn.BackgroundTransparency = 1
+    
+    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+    MinBtn.MouseButton1Click:Connect(function() Window.Visible = not Window.Visible end)
+    
+    return Window
+end
+
+return Library
+
