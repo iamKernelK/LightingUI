@@ -1,6 +1,7 @@
 local Library = {}
 
-function Library:CreateWindow(titleText)
+function Library.CreateWindow(Properties)
+    local titleText = Properties.Title or "Default Title"
     local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
     
     local Window = Instance.new("Frame", ScreenGui)
@@ -26,7 +27,7 @@ function Library:CreateWindow(titleText)
     Title.Text = titleText
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 14
+    Title.TextSize = 12
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local CloseBtn = Instance.new("ImageButton", TopBar)
@@ -39,7 +40,7 @@ function Library:CreateWindow(titleText)
     MinBtn.Size = UDim2.new(0, 25, 0, 25)
     MinBtn.Position = UDim2.new(1, -60, 0, 2)
     MinBtn.Image = "rbxassetid://82235228007110"
-    CloseBtn.BackgroundTransparency = 1
+    MinBtn.BackgroundTransparency = 1
     
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
     MinBtn.MouseButton1Click:Connect(function() Window.Visible = not Window.Visible end)
@@ -48,4 +49,3 @@ function Library:CreateWindow(titleText)
 end
 
 return Library
-
