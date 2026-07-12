@@ -854,56 +854,92 @@ function AxisUI:CreateWindow(Options)
             local InputBox = Utility:Create("TextBox", {
                 Size = UDim2.new(0, 110, 0, 26),
                 Position = UDim2.new(1, -12, 0.5, 0),
-                AnchorPoint = Vector2.new(1, 0.5),
-                BackgroundColor3 = Color3.fromRGB(15, 12, 8), -- أسود داكن متناسق مع ثيم الزجاج
-                BackgroundTransparency = 0.1,
-                Text = Default,
-                PlaceholderText = Placeholder,
-                PlaceholderColor3 = Theme.TextMuted,
-                TextColor3 = Theme.OrangePrimary,
-                Font = Enum.Font.GothamMedium,
-                TextSize = 12,
-                ClearTextOnFocus = ClearOnFocus,
-                Parent = BoxFrame
-            })
-            Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = InputBox})
-            
-            -- إضافة الـ UIStroke على الـ Border وجعله ظاهراً دائماً بوضوح (Transparency = 0)
-            local InputStroke = Utility:Create("UIStroke", {
-                Color = Theme.StrokeColor, 
-                Thickness = 1.2,
-                Transparency = 0, -- ظاهر دائماً وغير شفاف
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Border, -- محاذي للحدود تماماً
-                Parent = InputBox
-            })
+-- 4. TextBox (تصميم احترافي مطور: النص يسار ومربع الإدخال يمين مع حدود واضحة وثابتة دائماً)
+function Tab:CreateTextBox(Options, parentTarget)
+    local target = GetParent(parentTarget)
+    local Name = Options.Name or "Example TextBox"
+    local Placeholder = Options.Placeholder or "write here"
+    local Default = Options.Default or ""
+    local Callback = Options.Callback or function() end
+    local ClearOnFocus = Options.ClearOnFocus or false
 
-            -- 4. التفاعلات الحركية الناعمة عند التركيز (Focus)
-            InputBox.Focused:Connect(function()
-                TweenService:Create(InputStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Color = Theme.OrangePrimary}):Play()
-                TweenService:Create(MainStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Color = Theme.OrangeDark, Transparency = 0}):Play()
-            end)
+    -- 1. الإطار الرئيسي (أسود مع تأثير زجاجي - Glassmorphism)
+    local BoxFrame = Utility:Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 45),
+        BackgroundColor3 = Theme.ElementBackground,
+        BackgroundTransparency = Window.Transparency,
+        Parent = target
+    })
+    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = BoxFrame})
+    
+    local MainStroke = Utility:Create("UIStroke", {
+        Color = Theme.StrokeColor, 
+        Thickness = 1,
+        Transparency = 0.3, 
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent = BoxFrame
+    })
 
-            InputBox.FocusLost:Connect(function()
-                TweenService:Create(InputStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Color = Theme.StrokeColor}):Play()
-                TweenService:Create(MainStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Color = Theme.StrokeColor, Transparency = 0.3}):Play()
-                Callback(InputBox.Text)
-            end)
+    -- 2. النص على اليسار (حجم 15 واضح وأفخم)
+    Utility:Create("TextLabel", {
+        Size = UDim2.new(1, -150, 1, 0),
+        Position = UDim2.new(0, 15, 0, 0),
+        BackgroundTransparency = 1,
+        Text = Name,
+        TextColor3 = Theme.TextColor,
+        Font = Enum.Font.GothamMedium,
+        TextSize = 15, 
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = BoxFrame
+    })
 
-            -- 5. تأثير الهوفر (Hover) عند تمرير الماوس فوق الإطار الكامل
-            BoxFrame.MouseEnter:Connect(function()
-                TweenService:Create(BoxFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.HoverElement}):Play()
-            end)
-            BoxFrame.MouseLeave:Connect(function()
-                TweenService:Create(BoxFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementBackground}):Play()
-            end)
+    -- 3. مربع الكتابة (Input) على اليمين بالألوان الأصلية
+    local InputBox = Utility:Create("TextBox", {
+        Size = UDim2.new(0, 110, 0, 26),
+        Position = UDim2.new(1, -12, 0.5, 0),
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundColor3 = Color3.fromRGB(15, 12, 8), -- الأسود الداكن الأصلي الخاص بك
+        BackgroundTransparency = 0.1,
+        Text = Default,
+        PlaceholderText = Placeholder,
+        PlaceholderColor3 = Theme.TextMuted,
+        TextColor3 = Theme.OrangePrimary, -- البرتقالي الأصلي للنص
+        Font = Enum.Font.GothamMedium,
+        TextSize = 12,
+        ClearTextOnFocus = ClearOnFocus,
+        Parent = BoxFrame
+    })
+    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = InputBox})
+    
+    -- الـ UIStroke ثابت ومستمر بالظهور بنفس اللون الأصلي بدون تغيير (Transparency = 0)
+    local InputStroke = Utility:Create("UIStroke", {
+        Color = Theme.OrangePrimary, -- اللون برتقالي ثابت وواضح دائماً حتى لو لم تكتب شيئاً
+        Thickness = 1.2,
+        Transparency = 0, -- ظاهر دائماً وغير شفاف
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border, 
+        Parent = InputBox
+    })
 
-            return {
-                SetText = function(self, text) InputBox.Text = text end,
-                GetText = function(self) return InputBox.Text end,
-                Focus = function(self) InputBox:CaptureFocus() end
-            }
-        end
-        
+    -- 4. إرسال البيانات عند انتهاء التركيز (بدون تغيير ألوان الحدود)
+    InputBox.FocusLost:Connect(function(enterPressed)
+        Callback(InputBox.Text)
+    end)
+
+    -- 5. تأثير الهوفر (Hover) النظيف عند تمرير الماوس فوق الإطار الكامل
+    BoxFrame.MouseEnter:Connect(function()
+        TweenService:Create(BoxFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.HoverElement}):Play()
+    end)
+    BoxFrame.MouseLeave:Connect(function()
+        TweenService:Create(BoxFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementBackground}):Play()
+    end)
+
+    return {
+        SetText = function(self, text) InputBox.Text = text end,
+        GetText = function(self) return InputBox.Text end,
+        Focus = function(self) InputBox:CaptureFocus() end
+    }
+end
+
         -- 5. Toggle
         function Tab:CreateToggle(Options, parentTarget)
             local target = GetParent(parentTarget)
