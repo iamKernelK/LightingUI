@@ -1,12 +1,9 @@
-
-# Let me create the complete script properly and save it to a file
-
-script_content = '''--[[
-    ================================================================================
-    🔥 AXIS PREMIUM UI LIBRARY V3 (THE DEFINITIVE EDITION)
-    🎨 Theme: Dark Glass & Premium Orange Gradient
-    🛠️ Features: Smooth Tweens, Dynamic Topbar, Sections, SubTabs, SpeedHub Dropdowns
-    ================================================================================
+--[[
+================================================================================
+🔥 AXIS PREMIUM UI LIBRARY V3 (THE DEFINITIVE EDITION)
+🎨 Theme: Dark Glass & Premium Orange Gradient
+🛠️ Features: Smooth Tweens, Dynamic Topbar, Sections, SubTabs, SpeedHub Dropdowns
+================================================================================
 ]]
 
 local AxisUI = {}
@@ -86,6 +83,7 @@ end
 
 function Utility:MakeDraggable(dragPart, targetPart)
     local Dragging, DragInput, DragStart, StartPosition
+
     dragPart.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             Dragging = true
@@ -96,11 +94,13 @@ function Utility:MakeDraggable(dragPart, targetPart)
             end)
         end
     end)
+
     dragPart.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             DragInput = input
         end
     end)
+
     UserInputService.InputChanged:Connect(function(input)
         if input == DragInput and Dragging then
             local Delta = input.Position - DragStart
@@ -120,6 +120,7 @@ function Utility:RippleEffect(button)
         Parent = button
     })
     self:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = ripple})
+    
     local targetSize = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 1.5
     local tween = TweenService:Create(ripple, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Size = UDim2.new(0, targetSize, 0, targetSize),
@@ -142,6 +143,7 @@ function NotificationSystem.new(parentGui)
     self.MaxNotifications = 5
     self.NotificationHeight = 90
     self.NotificationSpacing = 10
+    
     self.Container = Utility:Create("Frame", {
         Size = UDim2.new(0, 320, 1, 0),
         Position = UDim2.new(1, -340, 0, 20),
@@ -149,6 +151,7 @@ function NotificationSystem.new(parentGui)
         ZIndex = 1000,
         Parent = parentGui
     })
+    
     return self
 end
 
@@ -157,7 +160,7 @@ function NotificationSystem:Notify(Options)
     local desc = Options.Description or ""
     local icon = Options.Icon or ""
     local duration = Options.Duration or 3
-    
+
     -- Shift existing notifications up
     for _, notif in ipairs(self.ActiveNotifications) do
         local newPos = notif.Instance.Position - UDim2.new(0, 0, 0, self.NotificationHeight + self.NotificationSpacing)
@@ -165,7 +168,7 @@ function NotificationSystem:Notify(Options)
             Position = newPos
         }):Play()
     end
-    
+
     -- Create notification frame
     local notifFrame = Utility:Create("Frame", {
         Size = UDim2.new(1, 0, 0, self.NotificationHeight),
@@ -184,7 +187,7 @@ function NotificationSystem:Notify(Options)
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Parent = notifFrame
     })
-    
+
     -- Icon
     local iconImg
     if icon and icon ~= "" then
@@ -199,7 +202,7 @@ function NotificationSystem:Notify(Options)
         })
         Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = iconImg})
     end
-    
+
     -- Title
     local titleLabel = Utility:Create("TextLabel", {
         Size = UDim2.new(1, icon and -70 or -24, 0, 22),
@@ -213,7 +216,7 @@ function NotificationSystem:Notify(Options)
         ZIndex = 1002,
         Parent = notifFrame
     })
-    
+
     -- Description
     local descLabel = Utility:Create("TextLabel", {
         Size = UDim2.new(1, icon and -70 or -24, 0, 40),
@@ -229,7 +232,7 @@ function NotificationSystem:Notify(Options)
         ZIndex = 1002,
         Parent = notifFrame
     })
-    
+
     -- Progress bar
     local progressBar = Utility:Create("Frame", {
         Size = UDim2.new(1, -20, 0, 3),
@@ -248,19 +251,19 @@ function NotificationSystem:Notify(Options)
         Parent = progressBar
     })
     Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = progressFill})
-    
+
     -- Animate in
     TweenService:Create(notifFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 0, 0, 0)
     }):Play()
-    
+
     -- Progress bar animation
     TweenService:Create(progressFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
         Size = UDim2.new(0, 0, 1, 0)
     }):Play()
-    
+
     table.insert(self.ActiveNotifications, 1, {Instance = notifFrame})
-    
+
     -- Remove after duration
     task.delay(duration, function()
         for i, notif in ipairs(self.ActiveNotifications) do
@@ -273,7 +276,6 @@ function NotificationSystem:Notify(Options)
         TweenService:Create(notifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
             Position = UDim2.new(1, 20, 0, notifFrame.Position.Y.Offset)
         }):Play()
-        
         task.wait(0.3)
         notifFrame:Destroy()
     end)
@@ -282,6 +284,7 @@ end
 -- ==========================================
 -- 🪟 Window Construction
 -- ==========================================
+
 function AxisUI:CreateWindow(Options)
     local Window = {
         Tabs = {},
@@ -293,17 +296,19 @@ function AxisUI:CreateWindow(Options)
     
     local TitleText = Options.Title or "Axis Premium"
     local DescText = Options.Description or "Ultimate UI Experience"
-    local ThemeImage = Options.ThemeImage or "rbxassetid://103845371952278"
-
+    local ThemeImage = Options.ThemeImage or "rbxassetid://103845371952278" 
+    
     -- ScreenGui Setup
     local ScreenGui = Utility:Create("ScreenGui", {
         Name = "AxisUI_PremiumV3",
         ResetOnSpawn = false,
         ZIndexBehavior = Enum.ZIndexBehavior.Global
     })
+
     pcall(function() ScreenGui.Parent = gethui() end)
     if not ScreenGui.Parent then pcall(function() ScreenGui.Parent = CoreGui end) end
     if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
     Window.ScreenGui = ScreenGui
 
     -- Main Background Frame
@@ -314,8 +319,8 @@ function AxisUI:CreateWindow(Options)
         BackgroundColor3 = Theme.MainBackground,
         BackgroundTransparency = Window.Transparency,
         BorderSizePixel = 0,
-        Active = true,
-        ClipsDescendants = false,
+        Active = true, 
+        ClipsDescendants = false, 
         Parent = ScreenGui
     })
     Window.MainFrame = MainFrame
@@ -353,7 +358,7 @@ function AxisUI:CreateWindow(Options)
         Parent = MainFrame
     })
     Utility:MakeDraggable(TopBar, MainFrame)
-    
+
     -- Title & Description
     local TitleLabel = Utility:Create("TextLabel", {
         Size = UDim2.new(0, 300, 0, 25),
@@ -410,14 +415,13 @@ function AxisUI:CreateWindow(Options)
             Image = iconId,
             Parent = TopBarButtonsContainer
         })
-        
         local btnGradient = Utility:ApplyGradient(btn)
-        
-        btn.MouseEnter:Connect(function() 
-            TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, 26, 0, 26)}):Play() 
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, 26, 0, 26)}):Play()
         end)
-        btn.MouseLeave:Connect(function() 
-            TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, 22, 0, 22)}):Play() 
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, 22, 0, 22)}):Play()
         end)
         
         local isToggled = false
@@ -432,8 +436,8 @@ function AxisUI:CreateWindow(Options)
         end)
 
         local btnObj = {Instance = btn, Name = name}
-        function btnObj:Remove() 
-            btn:Destroy() 
+        function btnObj:Remove()
+            btn:Destroy()
         end
         function btnObj:SetIcon(newIcon)
             btn.Image = newIcon
@@ -457,11 +461,10 @@ function AxisUI:CreateWindow(Options)
     Window:AddTopBarButton({
         Name = "Remove", 
         Icon = Theme.RemoveIcon, 
-        Callback = function()
-            -- Custom remove action
-        end
+        Callback = function() 
+            -- Custom remove action 
+        end 
     })
-    
     Window:AddTopBarButton({
         Name = "Close", 
         Icon = Theme.CloseIcon, 
@@ -469,16 +472,15 @@ function AxisUI:CreateWindow(Options)
             TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
             task.wait(0.4)
             ScreenGui:Destroy()
-        end
+        end 
     })
-    
     Window:AddTopBarButton({
         Name = "Bright", 
         Icon = Theme.TransparencyIcon, 
         ToggleCallback = function(isActive)
             Window.Transparency = isActive and 0.5 or 0.3
             TweenService:Create(MainFrame, TweenInfo.new(0.3), {BackgroundTransparency = Window.Transparency}):Play()
-        end
+        end 
     })
 
     -- Floating Button (Minimize restore)
@@ -516,7 +518,7 @@ function AxisUI:CreateWindow(Options)
             FloatingBtn.Visible = true
             FloatingBtn.Size = UDim2.new(0,0,0,0)
             TweenService:Create(FloatingBtn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0,50,0,50)}):Play()
-        end
+        end 
     })
 
     FloatingBtn.MouseButton1Click:Connect(function()
@@ -535,6 +537,7 @@ function AxisUI:CreateWindow(Options)
         BorderSizePixel = 0,
         Parent = MainFrame
     })
+
     Utility:Create("Frame", {
         Size = UDim2.new(0, 1, 1, -75),
         Position = UDim2.new(0, 180, 0, 75),
@@ -551,6 +554,7 @@ function AxisUI:CreateWindow(Options)
         ScrollBarThickness = 0,
         Parent = MainFrame
     })
+    
     Utility:Create("UIListLayout", {Padding = UDim.new(0, 8), Parent = Sidebar})
     Utility:Create("UIPadding", {PaddingTop = UDim.new(0, 15), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), Parent = Sidebar})
 
@@ -567,6 +571,7 @@ function AxisUI:CreateWindow(Options)
 
     -- Notification System
     Window.Notifications = NotificationSystem.new(ScreenGui)
+    
     function Window:Notify(Options)
         self.Notifications:Notify(Options)
     end
@@ -579,7 +584,7 @@ function AxisUI:CreateWindow(Options)
         local TabIcon = TabOptions.Icon or "rbxassetid://103845371952278"
         
         local Tab = {Elements = {}, Name = TabName}
-        local isFirst = (#Sidebar:GetChildren() == 2)
+        local isFirst = (#Sidebar:GetChildren() == 2) 
 
         -- Tab Button in Sidebar
         local TabBtn = Utility:Create("TextButton", {
@@ -591,6 +596,7 @@ function AxisUI:CreateWindow(Options)
             Parent = Sidebar
         })
         Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = TabBtn})
+        
         local TabStroke = Utility:Create("UIStroke", {
             Color = Theme.OrangePrimary,
             Transparency = isFirst and 0 or 1,
@@ -631,10 +637,11 @@ function AxisUI:CreateWindow(Options)
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             Parent = ContentArea
         })
+        
         Utility:Create("UIListLayout", {Padding = UDim.new(0, 10), Parent = TabContainer})
         Utility:Create("UIPadding", {
             PaddingTop = UDim.new(0, 15), 
-            PaddingBottom = UDim.new(0, 40),
+            PaddingBottom = UDim.new(0, 40), 
             PaddingLeft = UDim.new(0, 15), 
             PaddingRight = UDim.new(0, 20), 
             Parent = TabContainer
@@ -709,7 +716,9 @@ function AxisUI:CreateWindow(Options)
             return SectionData
         end
 
-        local function GetParent(customParent) return customParent or TabContainer end
+        local function GetParent(customParent)
+            return customParent or TabContainer
+        end
 
         -- 2. Label
         function Tab:CreateLabel(Options, parentTarget)
@@ -790,20 +799,16 @@ function AxisUI:CreateWindow(Options)
                 Parent = BtnFrame
             })
 
-            BtnFrame.MouseEnter:Connect(function() 
-                TweenService:Create(BtnFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.HoverElement}):Play() 
-            end)
-            BtnFrame.MouseLeave:Connect(function() 
-                TweenService:Create(BtnFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementBackground}):Play() 
-            end)
+            BtnFrame.MouseEnter:Connect(function() TweenService:Create(BtnFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.HoverElement}):Play() end)
+            BtnFrame.MouseLeave:Connect(function() TweenService:Create(BtnFrame, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementBackground}):Play() end)
             BtnFrame.MouseButton1Click:Connect(function()
                 Utility:RippleEffect(BtnFrame)
                 Callback()
             end)
             
             return {
-                SetText = function(self, newText) 
-                    BtnFrame:FindFirstChildOfClass("TextLabel").Text = newText 
+                SetText = function(self, newText)
+                    BtnFrame:FindFirstChildOfClass("TextLabel").Text = newText
                 end
             }
         end
@@ -935,7 +940,9 @@ function AxisUI:CreateWindow(Options)
                 TweenService:Create(ToggleBg, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundColor3 = targetBg}):Play()
                 TweenService:Create(ToggleCircle, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = targetPos}):Play()
                 TweenService:Create(ToggleStroke, TweenInfo.new(0.25), {Color = targetStroke}):Play()
-                if State then Utility:ApplyGradient(ToggleBg) else 
+                if State then 
+                    Utility:ApplyGradient(ToggleBg) 
+                else 
                     local g = ToggleBg:FindFirstChildOfClass("UIGradient")
                     if g then g:Destroy() end
                 end
@@ -954,7 +961,9 @@ function AxisUI:CreateWindow(Options)
                     UpdateVisuals()
                     Callback(State)
                 end,
-                Get = function(self) return State end
+                Get = function(self)
+                    return State
+                end
             }
         end
 
@@ -1115,8 +1124,11 @@ function AxisUI:CreateWindow(Options)
                 end
             end)
             UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then Dragging = false end
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    Dragging = false
+                end
             end)
+
             RunService.RenderStepped:Connect(function()
                 if Dragging then
                     local pct = math.clamp((Mouse.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
@@ -1133,7 +1145,7 @@ function AxisUI:CreateWindow(Options)
                     ValBox.Text = tostring(Default)
                 end
             end)
-            
+
             return {
                 SetValue = function(self, val)
                     val = math.clamp(val, Min, Max)
@@ -1191,16 +1203,17 @@ function AxisUI:CreateWindow(Options)
             Utility:Create("UIStroke", {Color = Theme.OrangePrimary, Parent = KeyDisplay})
 
             local Listening = false
-            
+
             KeyFrame.MouseButton1Click:Connect(function()
                 if Listening then return end
                 Listening = true
                 KeyDisplay.Text = "..."
                 TweenService:Create(KeyDisplay, TweenInfo.new(0.2), {BackgroundColor3 = Theme.OrangePrimary, TextColor3 = Color3.new(1,1,1)}):Play()
-                
+
                 local connection
                 connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if gameProcessed then return end
+                    
                     if input.UserInputType == Enum.UserInputType.Keyboard then
                         CurrentKey = input.KeyCode
                         KeyDisplay.Text = CurrentKey.Name
@@ -1216,7 +1229,7 @@ function AxisUI:CreateWindow(Options)
                     end
                 end)
             end)
-            
+
             UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 if gameProcessed or Listening then return end
                 if input.KeyCode == CurrentKey and CurrentKey ~= Enum.KeyCode.Unknown then
@@ -1229,7 +1242,9 @@ function AxisUI:CreateWindow(Options)
                     CurrentKey = keyCode
                     KeyDisplay.Text = CurrentKey ~= Enum.KeyCode.Unknown and CurrentKey.Name or "None"
                 end,
-                GetKey = function(self) return CurrentKey end
+                GetKey = function(self)
+                    return CurrentKey
+                end
             }
         end
 
@@ -1302,6 +1317,7 @@ function AxisUI:CreateWindow(Options)
             })
             Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = OverlayFrame})
             Utility:Create("UIStroke", {Color = Theme.StrokeColor, Thickness = 1.5, Parent = OverlayFrame})
+            
             Utility:Create("ImageLabel", {
                 Size = UDim2.new(1, 40, 1, 40),
                 Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -1367,13 +1383,17 @@ function AxisUI:CreateWindow(Options)
             local ItemButtons = {}
 
             local function UpdateSelectedText()
-                if #SelectedItems == 0 then SelectedText.Text = "None"
-                else SelectedText.Text = table.concat(SelectedItems, ", ") end
+                if #SelectedItems == 0 then
+                    SelectedText.Text = "None"
+                else
+                    SelectedText.Text = table.concat(SelectedItems, ", ")
+                end
             end
 
             local function RefreshList(filter)
                 for _, v in ipairs(ItemButtons) do v:Destroy() end
                 table.clear(ItemButtons)
+
                 ItemScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
                 ItemScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
@@ -1410,6 +1430,7 @@ function AxisUI:CreateWindow(Options)
 
                         ibtn.MouseButton1Click:Connect(function()
                             local idx = table.find(SelectedItems, itemStr)
+                            
                             if idx then
                                 table.remove(SelectedItems, idx)
                             else
@@ -1420,13 +1441,17 @@ function AxisUI:CreateWindow(Options)
                                     Arrow.Image = Theme.DropdownClosedIcon
                                     TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
                                 else
-                                    if #SelectedItems < MaxSelect then table.insert(SelectedItems, itemStr) end
+                                    if #SelectedItems < MaxSelect then
+                                        table.insert(SelectedItems, itemStr)
+                                    end
                                 end
                             end
+                            
                             UpdateSelectedText()
                             RefreshList(SearchBox.Text)
                             Callback(MaxSelect == 1 and SelectedItems[1] or SelectedItems)
                         end)
+
                         table.insert(ItemButtons, ibtn)
                     end
                 end
@@ -1441,14 +1466,17 @@ function AxisUI:CreateWindow(Options)
                 if isOpen then
                     local absPos = DropBtn.AbsolutePosition
                     local absSize = DropBtn.AbsoluteSize
+                    
                     local dropY = absPos.Y + absSize.Y + 5
                     if dropY + 220 > workspace.CurrentCamera.ViewportSize.Y then
                         dropY = absPos.Y - 225
                     end
+
                     OverlayFrame.Position = UDim2.new(0, absPos.X, 0, dropY)
                     OverlayFrame.Size = UDim2.new(0, absSize.X, 0, 220)
                     Arrow.Image = Theme.DropdownOpenIcon
                     RefreshList()
+                    
                     OverlayFrame.Visible = true
                     TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 180}):Play()
                 else
@@ -1457,12 +1485,13 @@ function AxisUI:CreateWindow(Options)
                     TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
                 end
             end)
-
+            
             UserInputService.InputBegan:Connect(function(input)
                 if isOpen and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
                     local mx, my = input.Position.X, input.Position.Y
                     local px, py = OverlayFrame.AbsolutePosition.X, OverlayFrame.AbsolutePosition.Y
                     local sx, sy = OverlayFrame.AbsoluteSize.X, OverlayFrame.AbsoluteSize.Y
+                    
                     local bx, by = DropBtn.AbsolutePosition.X, DropBtn.AbsolutePosition.Y
                     local bsx, bsy = DropBtn.AbsoluteSize.X, DropBtn.AbsoluteSize.Y
                     
@@ -1497,12 +1526,3 @@ function AxisUI:CreateWindow(Options)
 end
 
 return AxisUI
-'''
-
-# Save the script
-with open('/mnt/agents/output/AxisUI_V3.lua', 'w', encoding='utf-8') as f:
-    f.write(script_content)
-
-print("Script saved successfully!")
-print(f"Total lines: {len(script_content.splitlines())}")
-print(f"Total characters: {len(script_content)}")
