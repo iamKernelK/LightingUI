@@ -812,6 +812,7 @@ function AxisUI:CreateWindow(Options)
                 end
             }
         end
+
 -- 4. TextBox (تصميم احترافي مطور: النص يسار ومربع الإدخال يمين مع حدود واضحة دائماً)
         function Tab:CreateTextBox(Options, parentTarget)
             local target = GetParent(parentTarget)
