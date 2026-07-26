@@ -332,69 +332,107 @@ function LightningUI:CreateWindow(Options)
     end)
 
     -- ==========================================
-    -- 🔍 SEARCH LOGIC
+    -- 🔍 SEARCH LOGIC (REALTIME + CLOSE ON EMPTY)
     -- ==========================================
+
+    local function PerformSearch(query)
+        for _, v in ipairs(SearchScroll:GetChildren()) do
+            if v:IsA("Frame") or v:IsA("TextLabel") then v:Destroy() end
+        end
+        
+        if query == "" or query == nil then
+            SearchMenu.Visible = false
+            return
+        end
+        
+        query = string.lower(query)
+        local found = false
+        
+        for _, data in ipairs(GlobalRegistry) do
+            if string.find(string.lower(data.Name), query) then
+                found = true
+                
+                local ResBtn = Utility:Create("TextButton", {
+                    Size = UDim2.new(1, 0, 0, 50),
+                    BackgroundColor3 = Theme.ElementBg,
+                    Text = "",
+                    Parent = SearchScroll
+                })
+                Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = ResBtn})
+                
+                local resStroke = Utility:Create("UIStroke", {
+                    Color = Theme.Stroke,
+                    Parent = ResBtn
+                })
+                Utility:RegisterStroke(resStroke)
+                
+                Utility:Create("TextLabel", {
+                    Size = UDim2.new(1, -10, 0, 20),
+                    Position = UDim2.new(0, 10, 0, 5),
+                    BackgroundTransparency = 1,
+                    Text = data.Name,
+                    TextColor3 = Theme.Accent,
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 14,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Parent = ResBtn
+                })
+                Utility:Create("TextLabel", {
+                    Size = UDim2.new(1, -10, 0, 20),
+                    Position = UDim2.new(0, 10, 0, 25),
+                    BackgroundTransparency = 1,
+                    Text = data.Path,
+                    TextColor3 = Theme.TextMuted,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Parent = ResBtn
+                })
+                
+                ResBtn.MouseEnter:Connect(function()
+                    TweenService:Create(ResBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover}):Play()
+                end)
+                ResBtn.MouseLeave:Connect(function()
+                    TweenService:Create(ResBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementBg}):Play()
+                end)
+                
+                ResBtn.MouseButton1Click:Connect(function()
+                    SearchMenu.Visible = false
+                    TopSearchBox.Text = ""
+                    data.Callback()
+                end)
+            end
+        end
+        
+        SearchScroll.CanvasSize = UDim2.new(0, 0, 0, #SearchScroll:GetChildren() * 55)
+        SearchMenu.Visible = found
+        
+        if not found then
+            local NoResults = Utility:Create("TextLabel", {
+                Size = UDim2.new(1, 0, 0, 50),
+                BackgroundTransparency = 1,
+                Text = "❌ No results found for '" .. query .. "'",
+                TextColor3 = Theme.TextMuted,
+                Font = Enum.Font.GothamMedium,
+                TextSize = 14,
+                Parent = SearchScroll
+            })
+            SearchMenu.Visible = true
+        end
+    end
+
+    TopSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        PerformSearch(TopSearchBox.Text)
+    end)
+
     TopSearchBox.FocusLost:Connect(function(enterPressed)
         if enterPressed and TopSearchBox.Text ~= "" then
-            local query = string.lower(TopSearchBox.Text)
-            for _, v in ipairs(SearchScroll:GetChildren()) do
-                if v:IsA("Frame") then v:Destroy() end
-            end
-            
-            for _, data in ipairs(GlobalRegistry) do
-                if string.find(string.lower(data.Name), query) then
-                    local ResBtn = Utility:Create("TextButton", {
-                        Size = UDim2.new(1, 0, 0, 50),
-                        BackgroundColor3 = Theme.ElementBg,
-                        Text = "",
-                        Parent = SearchScroll
-                    })
-                    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = ResBtn})
-                    
-                    local resStroke = Utility:Create("UIStroke", {
-                        Color = Theme.Stroke,
-                        Parent = ResBtn
-                    })
-                    Utility:RegisterStroke(resStroke)
-                    
-                    Utility:Create("TextLabel", {
-                        Size = UDim2.new(1, -10, 0, 20),
-                        Position = UDim2.new(0, 10, 0, 5),
-                        BackgroundTransparency = 1,
-                        Text = data.Name,
-                        TextColor3 = Theme.Accent,
-                        Font = Enum.Font.GothamBold,
-                        TextSize = 14,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        Parent = ResBtn
-                    })
-                    Utility:Create("TextLabel", {
-                        Size = UDim2.new(1, -10, 0, 20),
-                        Position = UDim2.new(0, 10, 0, 25),
-                        BackgroundTransparency = 1,
-                        Text = data.Path,
-                        TextColor3 = Theme.TextMuted,
-                        Font = Enum.Font.GothamMedium,
-                        TextSize = 11,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        Parent = ResBtn
-                    })
-                    
-                    ResBtn.MouseEnter:Connect(function()
-                        TweenService:Create(ResBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover}):Play()
-                    end)
-                    ResBtn.MouseLeave:Connect(function()
-                        TweenService:Create(ResBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementBg}):Play()
-                    end)
-                    
-                    ResBtn.MouseButton1Click:Connect(function()
-                        SearchMenu.Visible = false
-                        data.Callback()
-                    end)
+            for _, child in ipairs(SearchScroll:GetChildren()) do
+                if child:IsA("TextButton") then
+                    child.MouseButton1Click:Fire()
+                    break
                 end
             end
-            SearchScroll.CanvasSize = UDim2.new(0, 0, 0, #SearchScroll:GetChildren() * 55)
-            SearchMenu.Visible = true
         end
     end)
 
