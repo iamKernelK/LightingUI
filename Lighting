@@ -1,49 +1,75 @@
--- ═══════════════════════════════════════════════════════════════
---                    A X I S   U I   L I B R A R Y
---              Premium Dark Orange Theme for Roblox
--- ═══════════════════════════════════════════════════════════════
-
 local AxisUI = {}
 AxisUI.__index = AxisUI
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 
--- ═══════════════════════════════════════════════════════════════
---                        THEME COLORS
--- ═══════════════════════════════════════════════════════════════
+-- ==========================================
+-- ثوابت الألوان (Premium Dark Orange Theme)
+-- ==========================================
 local THEME_ORANGE = Color3.fromRGB(255, 140, 0)
 local THEME_ORANGE_DARK = Color3.fromRGB(180, 80, 0)
 local THEME_ORANGE_LIGHT = Color3.fromRGB(255, 180, 80)
-local DARK_GLASS_BG = Color3.fromRGB(12, 8, 5)
-local TAB_BG = Color3.fromRGB(20, 15, 12)
-local TAB_HOVER_BG = Color3.fromRGB(30, 20, 15)
-local TAB_SELECTED_BG = Color3.fromRGB(45, 25, 10)
-local TEXT_COLOR = Color3.fromRGB(180, 180, 180)
-local TEXT_SELECTED = Color3.fromRGB(255, 255, 255)
-local BUTTON_BG = Color3.fromRGB(16, 12, 10)
-local BUTTON_HOVER_BG = Color3.fromRGB(24, 16, 12)
-local ELEMENT_BG = Color3.fromRGB(20, 15, 12)
-local ELEMENT_HOVER = Color3.fromRGB(28, 18, 11)
-local TRACK_BLACK = Color3.fromRGB(25, 25, 25)
+local DARK_GLASS_BG = Color3.fromRGB(12, 8, 5) 
 
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      WINDOW (Main UI)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
+-- ==========================================
+-- دوال المساعدة (Utility Functions)
+-- ==========================================
+
+local function MakeDraggable(dragPart, targetPart)
+    local Dragging, DragInput, DragStart, StartPosition
+
+    dragPart.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = true
+            DragStart = input.Position
+            StartPosition = targetPart.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then Dragging = false end
+            end)
+        end
+    end)
+
+    dragPart.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            DragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == DragInput and Dragging then
+            local Delta = input.Position - DragStart
+            local pos = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + Delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + Delta.Y)
+            TweenService:Create(targetPart, TweenInfo.new(0.06, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = pos}):Play()
+        end
+    end)
+end
+
+local function ApplyGradient(instance)
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME_ORANGE_LIGHT),
+        ColorSequenceKeypoint.new(0.5, THEME_ORANGE),
+        ColorSequenceKeypoint.new(1, THEME_ORANGE_DARK)
+    })
+    grad.Rotation = 45
+    grad.Parent = instance
+    return grad
+end
+
+-- ==========================================
+-- بناء الواجهة الأساسية (Main UI Construction)
+-- ==========================================
 
 function AxisUI.CreateWindow(Options)
     local self = setmetatable({}, AxisUI)
-
+    
     local TitleText = Options.Title or "Axis Future"
     local DescText = Options.Description or "Premium UI"
-    local ThemeImage = Options.ThemeImage or "rbxassetid://103845371952278"
-
-    -- ScreenGui
+    local ThemeImage = Options.ThemeImage or "rbxassetid://103845371952278" 
+    
+    -- 1. ScreenGui
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = "AxisUI_Premium"
     self.ScreenGui.ResetOnSpawn = false
@@ -51,28 +77,28 @@ function AxisUI.CreateWindow(Options)
 
     pcall(function() self.ScreenGui.Parent = gethui() end)
     if not self.ScreenGui.Parent then pcall(function() self.ScreenGui.Parent = CoreGui end) end
-    if not self.ScreenGui.Parent then self.ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
+    if not self.ScreenGui.Parent then self.ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    -- Main Frame
+    -- 2. النافذة الرئيسية
     self.MainFrame = Instance.new("Frame")
     self.MainFrame.Size = UDim2.new(0, 0, 0, 0)
     self.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     self.MainFrame.BackgroundColor3 = DARK_GLASS_BG
     self.MainFrame.BorderSizePixel = 0
-    self.MainFrame.Active = true
-    self.MainFrame.ClipsDescendants = true
+    self.MainFrame.Active = true 
+    self.MainFrame.ClipsDescendants = true 
     self.MainFrame.Parent = self.ScreenGui
 
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 8)
+    MainCorner.CornerRadius = UDim.new(0, 8) 
     MainCorner.Parent = self.MainFrame
 
     local MainBgGradient = Instance.new("UIGradient")
     MainBgGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, DARK_GLASS_BG),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(18, 10, 6)),
-        ColorSequenceKeypoint.new(1, DARK_GLASS_BG)
+        ColorSequenceKeypoint.new(0, DARK_GLASS_BG),      
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(18, 10, 6)), 
+        ColorSequenceKeypoint.new(1, DARK_GLASS_BG)       
     })
     MainBgGradient.Rotation = 45
     MainBgGradient.Parent = self.MainFrame
@@ -84,65 +110,30 @@ function AxisUI.CreateWindow(Options)
     Stroke.Thickness = 1.2
     Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Stroke.Parent = self.MainFrame
-
-    local StrokeGrad = Instance.new("UIGradient")
-    StrokeGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME_ORANGE_LIGHT),
-        ColorSequenceKeypoint.new(0.5, THEME_ORANGE),
-        ColorSequenceKeypoint.new(1, THEME_ORANGE_DARK)
-    })
-    StrokeGrad.Rotation = 45
-    StrokeGrad.Parent = Stroke
+    local StrokeGrad = ApplyGradient(Stroke)
     TweenService:Create(StrokeGrad, TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360}):Play()
 
-    -- ═══════════════════════════════════════════════════════════════
-    --                      TOPBAR
-    -- ═══════════════════════════════════════════════════════════════
-
+    -- 3. الشريط العلوي (TopBar)
     self.TopBar = Instance.new("Frame")
     self.TopBar.Size = UDim2.new(1, 0, 0, 65)
     self.TopBar.BackgroundTransparency = 1
     self.TopBar.ZIndex = 5
     self.TopBar.Parent = self.MainFrame
+    MakeDraggable(self.TopBar, self.MainFrame)
 
-    -- Draggable functionality
-    local Dragging, DragInput, DragStart, StartPosition
-    self.TopBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Dragging = true
-            DragStart = input.Position
-            StartPosition = self.MainFrame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then Dragging = false end
-            end)
-        end
-    end)
-    self.TopBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            DragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == DragInput and Dragging then
-            local Delta = input.Position - DragStart
-            local pos = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + Delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + Delta.Y)
-            TweenService:Create(self.MainFrame, TweenInfo.new(0.06, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = pos}):Play()
-        end
-    end)
-
-    -- Title Label
     self.TitleLabel = Instance.new("TextLabel")
     self.TitleLabel.Size = UDim2.new(0, 200, 0, 22)
     self.TitleLabel.Position = UDim2.new(0, 20, 0, 12)
     self.TitleLabel.BackgroundTransparency = 1
     self.TitleLabel.Text = TitleText
-    self.TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+    self.TitleLabel.TextColor3 = Color3.new(1, 1, 1) -- مهم جداً لكي يظهر التدرج!
     self.TitleLabel.Font = Enum.Font.GothamBold
     self.TitleLabel.TextSize = 17
     self.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     self.TitleLabel.ZIndex = 5
     self.TitleLabel.Parent = self.TopBar
-
+    
+    -- تدرج النص من برتقالي إلى برتقالي غامق
     local TitleGrad = Instance.new("UIGradient")
     TitleGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, THEME_ORANGE),
@@ -151,7 +142,6 @@ function AxisUI.CreateWindow(Options)
     TitleGrad.Rotation = 0
     TitleGrad.Parent = self.TitleLabel
 
-    -- Description Label
     self.DescLabel = Instance.new("TextLabel")
     self.DescLabel.Size = UDim2.new(0, 200, 0, 15)
     self.DescLabel.Position = UDim2.new(0, 20, 0, 36)
@@ -164,7 +154,6 @@ function AxisUI.CreateWindow(Options)
     self.DescLabel.ZIndex = 5
     self.DescLabel.Parent = self.TopBar
 
-    -- Top Bar Icon Buttons
     local function CreateTopIconBtn(name, iconId, posOffset)
         local btn = Instance.new("ImageButton")
         btn.Name = name
@@ -174,7 +163,7 @@ function AxisUI.CreateWindow(Options)
         btn.Image = iconId
         btn.ZIndex = 5
         btn.Parent = self.TopBar
-
+        
         local iconGrad = Instance.new("UIGradient")
         iconGrad.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, THEME_ORANGE_LIGHT),
@@ -198,10 +187,7 @@ function AxisUI.CreateWindow(Options)
     self.MinBtn = CreateTopIconBtn("Minimize", "rbxassetid://78357418744409", -110)
     self.TransBtn = CreateTopIconBtn("Transparency", "rbxassetid://101356891567422", -145)
 
-    -- ═══════════════════════════════════════════════════════════════
-    --                      DIVIDERS
-    -- ═══════════════════════════════════════════════════════════════
-
+    -- 4. الحاويات الرئيسية (Tabs & Elements)
     local TopDivider = Instance.new("Frame", self.MainFrame)
     TopDivider.Size = UDim2.new(1, 0, 0, 1)
     TopDivider.Position = UDim2.new(0, 0, 0, 65)
@@ -216,17 +202,13 @@ function AxisUI.CreateWindow(Options)
     SidebarDivider.BackgroundTransparency = 0.8
     SidebarDivider.BorderSizePixel = 0
 
-    -- ═══════════════════════════════════════════════════════════════
-    --                      TABS MENU (Sidebar)
-    -- ═══════════════════════════════════════════════════════════════
-
     self.TabsMenu = Instance.new("ScrollingFrame", self.MainFrame)
     self.TabsMenu.Name = "TabsMenu"
     self.TabsMenu.Size = UDim2.new(0, 160, 1, -65)
     self.TabsMenu.Position = UDim2.new(0, 0, 0, 65)
     self.TabsMenu.BackgroundTransparency = 1
     self.TabsMenu.ScrollBarThickness = 0
-
+    
     local TabsLayout = Instance.new("UIListLayout", self.TabsMenu)
     TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabsLayout.Padding = UDim.new(0, 6)
@@ -235,10 +217,7 @@ function AxisUI.CreateWindow(Options)
     TabsPadding.PaddingLeft = UDim.new(0, 10)
     TabsPadding.PaddingRight = UDim.new(0, 10)
 
-    -- ═══════════════════════════════════════════════════════════════
-    --                      ELEMENTS MENU (Content Area)
-    -- ═══════════════════════════════════════════════════════════════
-
+    -- إصلاح ElementsMenu لمنع القص وضبط السكرول
     self.ElementsMenu = Instance.new("ScrollingFrame", self.MainFrame)
     self.ElementsMenu.Name = "ElementsMenu"
     self.ElementsMenu.Size = UDim2.new(1, -161, 1, -65)
@@ -249,6 +228,7 @@ function AxisUI.CreateWindow(Options)
     self.ElementsMenu.CanvasSize = UDim2.new(0, 0, 0, 0)
     self.ElementsMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
+    -- كود ذكي: يطبق البادينغ على أي تبويب (Tab) يضاف داخله ليمنع قص الأزرار السفلية
     self.ElementsMenu.ChildAdded:Connect(function(child)
         if child:IsA("ScrollingFrame") or child:IsA("Frame") then
             if child:IsA("ScrollingFrame") then
@@ -256,16 +236,16 @@ function AxisUI.CreateWindow(Options)
                 child.CanvasSize = UDim2.new(0, 0, 0, 0)
             end
             local padding = child:FindFirstChildOfClass("UIPadding") or Instance.new("UIPadding", child)
-            padding.PaddingBottom = UDim.new(0, 40)
+            padding.PaddingBottom = UDim.new(0, 40) -- هذه المسافة تمنع قص العنصر الأخير نهائياً!
             padding.PaddingTop = UDim.new(0, 15)
             padding.PaddingLeft = UDim.new(0, 10)
             padding.PaddingRight = UDim.new(0, 15)
         end
     end)
 
-    -- ═══════════════════════════════════════════════════════════════
-    --                      TOPBAR BUTTON LOGIC
-    -- ═══════════════════════════════════════════════════════════════
+    -- ==========================================
+    -- تفاعلات الأزرار العلوية (TopBar Logic)
+    -- ==========================================
 
     local isTransparent = false
     self.TransBtn.MouseButton1Click:Connect(function()
@@ -283,17 +263,16 @@ function AxisUI.CreateWindow(Options)
         TweenService:Create(self.MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = isMaximized and maxSize or normalSize}):Play()
     end)
 
-    -- Floating Button
     self.FloatingBtn = Instance.new("ImageButton")
     self.FloatingBtn.Size = UDim2.new(0, 50, 0, 50)
-    self.FloatingBtn.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.FloatingBtn.Position = UDim2.new(0.5, 0, 0.1, 30)
+    self.FloatingBtn.AnchorPoint = Vector2.new(0.5, 0.5) 
+    self.FloatingBtn.Position = UDim2.new(0.5, 0, 0.1, 30) 
     self.FloatingBtn.BackgroundColor3 = Color3.fromRGB(15, 8, 5)
     self.FloatingBtn.AutoButtonColor = false
     self.FloatingBtn.Visible = false
     self.FloatingBtn.Parent = self.ScreenGui
     Instance.new("UICorner", self.FloatingBtn).CornerRadius = UDim.new(0, 10)
-
+    
     local FloatIcon = Instance.new("ImageLabel", self.FloatingBtn)
     FloatIcon.Size = UDim2.new(1, -6, 1, -6)
     FloatIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -302,44 +281,13 @@ function AxisUI.CreateWindow(Options)
     FloatIcon.Image = ThemeImage
     FloatIcon.ScaleType = Enum.ScaleType.Crop
     Instance.new("UICorner", FloatIcon).CornerRadius = UDim.new(0, 8)
-
+    
     local FloatStroke = Instance.new("UIStroke", self.FloatingBtn)
     FloatStroke.Thickness = 1.5
     FloatStroke.Color = Color3.new(1,1,1)
-    local FloatStrokeGrad = Instance.new("UIGradient", FloatStroke)
-    FloatStrokeGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME_ORANGE_LIGHT),
-        ColorSequenceKeypoint.new(0.5, THEME_ORANGE),
-        ColorSequenceKeypoint.new(1, THEME_ORANGE_DARK)
-    })
-    FloatStrokeGrad.Rotation = 45
+    ApplyGradient(FloatStroke)
+    MakeDraggable(self.FloatingBtn, self.FloatingBtn)
 
-    -- Draggable Floating Button
-    local FDragging, FDragInput, FDragStart, FStartPos
-    self.FloatingBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            FDragging = true
-            FDragStart = input.Position
-            FStartPos = self.FloatingBtn.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then FDragging = false end
-            end)
-        end
-    end)
-    self.FloatingBtn.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            FDragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == FDragInput and FDragging then
-            local Delta = input.Position - FDragStart
-            local pos = UDim2.new(FStartPos.X.Scale, FStartPos.X.Offset + Delta.X, FStartPos.Y.Scale, FStartPos.Y.Offset + Delta.Y)
-            TweenService:Create(self.FloatingBtn, TweenInfo.new(0.06, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = pos}):Play()
-        end
-    end)
-
-    -- Minimize
     self.MinBtn.MouseButton1Click:Connect(function()
         TweenService:Create(self.MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
         task.wait(0.4)
@@ -349,13 +297,11 @@ function AxisUI.CreateWindow(Options)
         TweenService:Create(self.FloatingBtn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 50, 0, 50)}):Play()
     end)
 
-    -- Restore from Floating
     local dragStartPos = nil
     self.FloatingBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragStartPos = input.Position
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragStartPos = input.Position end
     end)
+    
     self.FloatingBtn.InputEnded:Connect(function(input)
         if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and dragStartPos then
             if (input.Position - dragStartPos).Magnitude < 5 then
@@ -368,54 +314,52 @@ function AxisUI.CreateWindow(Options)
         end
     end)
 
-    -- Close
     self.CloseBtn.MouseButton1Click:Connect(function()
         TweenService:Create(self.MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
         task.wait(0.4)
         self.ScreenGui:Destroy()
     end)
 
-    -- Open Animation
-    self.MainFrame.ClipsDescendants = false
+    self.MainFrame.ClipsDescendants = false 
     TweenService:Create(self.MainFrame, TweenInfo.new(0.7, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = normalSize}):Play()
 
     return self
 end
+local TweenService = game:GetService("TweenService")
+local TabModule = {}
 
-===============END===============
+local THEME_ORANGE = Color3.fromRGB(255, 140, 0)
+local TAB_BG = Color3.fromRGB(20, 15, 12)
+local TAB_HOVER_BG = Color3.fromRGB(30, 20, 15)
+local TAB_SELECTED_BG = Color3.fromRGB(45, 25, 10)
+local TEXT_COLOR = Color3.fromRGB(180, 180, 180)
+local TEXT_SELECTED = Color3.fromRGB(255, 255, 255)
 
-
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                         TAB (Sidebar Tabs)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
-
-function AxisUI:CreateTab(Options)
+function TabModule.Create(Window, Options)
     local Name = Options.Name or "Tab"
     local IconId = Options.Icon
-
+    
     local isFirstTab = false
     local existingTabs = 0
-    for _, v in ipairs(self.ElementsMenu:GetChildren()) do
+    for _, v in ipairs(Window.ElementsMenu:GetChildren()) do
         if v.Name:match("_Container") then existingTabs = existingTabs + 1 end
     end
     if existingTabs == 0 then isFirstTab = true end
 
-    -- Tab Button
+    -- 1. الزر الجانبي
     local TabButton = Instance.new("TextButton")
     TabButton.Name = Name .. "_TabBtn"
     TabButton.Size = UDim2.new(1, 0, 0, 38)
     TabButton.BackgroundColor3 = isFirstTab and TAB_SELECTED_BG or TAB_BG
-    TabButton.Text = ""
+    TabButton.Text = "" 
     TabButton.AutoButtonColor = false
     TabButton.ClipsDescendants = true
-    TabButton.Parent = self.TabsMenu
+    TabButton.Parent = Window.TabsMenu
 
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 8)
     Corner.Parent = TabButton
-
+    
     local Stroke = Instance.new("UIStroke")
     Stroke.Color = THEME_ORANGE
     Stroke.Thickness = 1
@@ -447,16 +391,17 @@ function AxisUI:CreateTab(Options)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TabButton
 
-    -- Tab Container
+    -- 2. حاوية العناصر (Tab Container)
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = Name .. "_Container"
     TabContainer.Size = UDim2.new(1, 0, 1, 0)
     TabContainer.BackgroundTransparency = 1
     TabContainer.ScrollBarThickness = 0
-    TabContainer.Visible = isFirstTab
+    TabContainer.Visible = isFirstTab 
     TabContainer.ClipsDescendants = true
-    TabContainer.Parent = self.ElementsMenu
+    TabContainer.Parent = Window.ElementsMenu 
 
+    -- [الحل هنا]: إضافة UIPadding لمنع الأزرار من الالتصاق بالحواف
     local Padding = Instance.new("UIPadding")
     Padding.PaddingTop = UDim.new(0, 12)
     Padding.PaddingBottom = UDim.new(0, 12)
@@ -469,22 +414,22 @@ function AxisUI:CreateTab(Options)
     Layout.Padding = UDim.new(0, 8)
     Layout.Parent = TabContainer
 
-    -- Tab Switch Logic
+    -- 3. منطق الأنيميشن والتبديل
     TabButton.MouseButton1Click:Connect(function()
         if TabContainer.Visible then return end
-
-        for _, child in ipairs(self.ElementsMenu:GetChildren()) do
+        
+        for _, child in ipairs(Window.ElementsMenu:GetChildren()) do
             if child:IsA("ScrollingFrame") then child.Visible = false end
         end
-
-        for _, btn in ipairs(self.TabsMenu:GetChildren()) do
+        
+        for _, btn in ipairs(Window.TabsMenu:GetChildren()) do
             if btn:IsA("TextButton") then
                 TweenService:Create(btn, TweenInfo.new(0.25), {BackgroundColor3 = TAB_BG}):Play()
                 TweenService:Create(btn:FindFirstChild("UIStroke"), TweenInfo.new(0.25), {Transparency = 1}):Play()
-
+                
                 local txt = btn:FindFirstChildOfClass("TextLabel")
                 if txt then TweenService:Create(txt, TweenInfo.new(0.25), {TextColor3 = TEXT_COLOR}):Play() end
-
+                
                 local icon = btn:FindFirstChildOfClass("ImageLabel")
                 if icon then TweenService:Create(icon, TweenInfo.new(0.25), {ImageColor3 = TEXT_COLOR}):Play() end
             end
@@ -494,181 +439,51 @@ function AxisUI:CreateTab(Options)
         TweenService:Create(TabButton, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = TAB_SELECTED_BG}):Play()
         TweenService:Create(Stroke, TweenInfo.new(0.3), {Transparency = 0}):Play()
         TweenService:Create(Title, TweenInfo.new(0.3), {TextColor3 = TEXT_SELECTED}):Play()
-
+        
         local currentIcon = TabButton:FindFirstChildOfClass("ImageLabel")
         if currentIcon then TweenService:Create(currentIcon, TweenInfo.new(0.3), {ImageColor3 = THEME_ORANGE}):Play() end
     end)
-
+    
     TabButton.MouseEnter:Connect(function()
         if not TabContainer.Visible then
             TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = TAB_HOVER_BG}):Play()
         end
     end)
-
+    
     TabButton.MouseLeave:Connect(function()
         if not TabContainer.Visible then
             TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = TAB_BG}):Play()
         end
     end)
 
-    return TabContainer
+    return TabContainer 
 end
 
-===============END===============
+return TabModule
+local TweenService = game:GetService("TweenService")
+local ButtonModule = {}
 
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      TAB SECTION (Collapsible Sections)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
+local THEME_ORANGE = Color3.fromRGB(255, 140, 0)
+local BUTTON_BG = Color3.fromRGB(16, 12, 10)
+local BUTTON_HOVER_BG = Color3.fromRGB(24, 16, 12)
 
-function AxisUI:CreateTabSection(ParentFrame, SectionName)
-    local isExpanded = false
-    local headerHeight = 32
-
-    local Container = Instance.new("Frame")
-    Container.Name = SectionName .. "_Section"
-    Container.Size = UDim2.new(1, 0, 0, headerHeight)
-    Container.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Container.ClipsDescendants = true
-    Container.Parent = ParentFrame
-
-    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 5)
-
-    local HeaderBtn = Instance.new("TextButton")
-    HeaderBtn.Size = UDim2.new(1, 0, 0, headerHeight)
-    HeaderBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    HeaderBtn.AutoButtonColor = false
-    HeaderBtn.Text = ""
-    HeaderBtn.Parent = Container
-
-    Instance.new("UICorner", HeaderBtn).CornerRadius = UDim.new(0, 5)
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -40, 1, 0)
-    Title.Position = UDim2.new(0, 12, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.Text = SectionName
-    Title.TextColor3 = Color3.fromRGB(240, 240, 240)
-    Title.Font = Enum.Font.GothamMedium
-    Title.TextSize = 13
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = HeaderBtn
-
-    local Arrow = Instance.new("ImageLabel")
-    Arrow.Size = UDim2.new(0, 14, 0, 14)
-    Arrow.Position = UDim2.new(1, -24, 0.5, -7)
-    Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://10392248278"
-    Arrow.ImageColor3 = Color3.fromRGB(170, 170, 170)
-    Arrow.Rotation = 0
-    Arrow.Parent = HeaderBtn
-
-    local ContentFrame = Instance.new("Frame")
-    ContentFrame.Size = UDim2.new(1, 0, 0, 0)
-    ContentFrame.Position = UDim2.new(0, 0, 0, headerHeight)
-    ContentFrame.BackgroundTransparency = 1
-    ContentFrame.Parent = Container
-
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, 4)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    UIListLayout.Parent = ContentFrame
-
-    local UIPadding = Instance.new("UIPadding")
-    UIPadding.PaddingTop = UDim.new(0, 6)
-    UIPadding.PaddingBottom = UDim.new(0, 6)
-    UIPadding.Parent = ContentFrame
-
-    HeaderBtn.MouseEnter:Connect(function()
-        TweenService:Create(HeaderBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(38, 38, 38)}):Play()
-    end)
-
-    HeaderBtn.MouseLeave:Connect(function()
-        TweenService:Create(HeaderBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
-    end)
-
-    HeaderBtn.MouseButton1Click:Connect(function()
-        isExpanded = not isExpanded
-
-        TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Rotation = isExpanded and 90 or 0
-        }):Play()
-
-        local targetHeight = isExpanded and (headerHeight + UIListLayout.AbsoluteContentSize.Y + 12) or headerHeight
-
-        TweenService:Create(Container, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(1, 0, 0, targetHeight)
-        }):Play()
-    end)
-
-    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        if isExpanded then
-            Container.Size = UDim2.new(1, 0, 0, headerHeight + UIListLayout.AbsoluteContentSize.Y + 12)
-        end
-    end)
-
-    return ContentFrame
-end
-
-===============END===============
-
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      SECTION (Title Spacer)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
-
-function AxisUI:CreateSection(Container, Config)
-    local SectionName = Config.Name or "Section"
-
-    local SectionFrame = Instance.new("Frame")
-    SectionFrame.Name = SectionName .. "_Section"
-    SectionFrame.Size = UDim2.new(1, 0, 0, 38)
-    SectionFrame.BackgroundTransparency = 1
-    SectionFrame.Parent = Container
-
-    local Title = Instance.new("TextLabel")
-    Title.Name = "Title"
-    Title.Size = UDim2.new(1, -30, 1, 0)
-    Title.Position = UDim2.new(0, 15, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.Text = SectionName
-    Title.TextColor3 = THEME_ORANGE
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 15
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.TextYAlignment = Enum.TextYAlignment.Bottom
-    Title.Parent = SectionFrame
-
-    return SectionFrame
-end
-
-===============END===============
-
-
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      BUTTON (Interactive Button)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
-
-function AxisUI:CreateButton(ParentFrame, Options)
+function ButtonModule.Create(ParentFrame, Options)
     local text = Options.Name or "Premium Button"
     local callback = Options.Callback or function() end
-    local iconId = Options.Icon or "rbxassetid://107150227368485"
-
+    local iconId = Options.Icon or "rbxassetid://107150227368485" 
+    
+    -- 1. الهيكل الفخم للزر
     local Button = Instance.new("TextButton")
     Button.Name = text .. "_Btn"
-    Button.Size = UDim2.new(1, 0, 0, 44)
+    Button.Size = UDim2.new(1, 0, 0, 44) 
     Button.BackgroundColor3 = BUTTON_BG
-    Button.Text = ""
+    Button.Text = "" 
     Button.AutoButtonColor = false
     Button.Parent = ParentFrame
-
+    
     Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 8)
-
+    
+    -- تأثير تدرج اللوني الفخم للواجهة الخلفية
     local UIModGradient = Instance.new("UIGradient")
     UIModGradient.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
@@ -676,60 +491,66 @@ function AxisUI:CreateButton(ParentFrame, Options)
     })
     UIModGradient.Rotation = 90
     UIModGradient.Parent = Button
-
+    
+    -- حاوية التموج المائي (Ripple)
     local ClipContainer = Instance.new("Frame", Button)
     ClipContainer.Size = UDim2.new(1, 0, 1, 0)
     ClipContainer.BackgroundTransparency = 1
     ClipContainer.ClipsDescendants = true
     Instance.new("UICorner", ClipContainer).CornerRadius = UDim.new(0, 8)
 
+    -- إطار الإشعاع المحيط المطور (Stroke Expansion Effect)
     local Stroke = Instance.new("UIStroke", Button)
     Stroke.Color = THEME_ORANGE
     Stroke.Thickness = 1
     Stroke.Transparency = 0.7
     Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
+    
+    -- نص العنصر الاحترافي
     local Title = Instance.new("TextLabel", Button)
-    Title.Size = UDim2.new(1, -55, 1, 0)
-    Title.Position = UDim2.new(0, 16, 0, 0)
+    Title.Size = UDim2.new(1, -55, 1, 0) 
+    Title.Position = UDim2.new(0, 16, 0, 0) 
     Title.BackgroundTransparency = 1
     Title.Text = text
     Title.TextColor3 = THEME_ORANGE
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 13.5
     Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.ZIndex = 2
-
+    Title.ZIndex = 2 
+    
+    -- الأيقونة التفاعلية
     local RightIcon = Instance.new("ImageLabel", Button)
     RightIcon.Size = UDim2.new(0, 18, 0, 18)
-    RightIcon.Position = UDim2.new(1, -16, 0.5, 0)
+    RightIcon.Position = UDim2.new(1, -16, 0.5, 0) 
     RightIcon.AnchorPoint = Vector2.new(1, 0.5)
     RightIcon.BackgroundTransparency = 1
     RightIcon.Image = iconId
-    RightIcon.ImageColor3 = THEME_ORANGE
+    RightIcon.ImageColor3 = THEME_ORANGE 
     RightIcon.ZIndex = 2
 
+    -- الأنيميشن الاحترافي عند التفاعل
     Button.MouseEnter:Connect(function()
         TweenService:Create(Button, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundColor3 = BUTTON_HOVER_BG}):Play()
         TweenService:Create(Stroke, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {Thickness = 1.6, Transparency = 0.2}):Play()
     end)
-
+    
     Button.MouseLeave:Connect(function()
         TweenService:Create(Button, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundColor3 = BUTTON_BG}):Play()
         TweenService:Create(Stroke, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Thickness = 1, Transparency = 0.7}):Play()
     end)
 
+    -- تأثير موجة الطاقة (Energy Ripple) عند الضغط بالماوس
     Button.MouseButton1Down:Connect(function()
-        local Mouse = Players.LocalPlayer:GetMouse()
+        local Mouse = game.Players.LocalPlayer:GetMouse()
         local X, Y = Mouse.X - Button.AbsolutePosition.X, Mouse.Y - Button.AbsolutePosition.Y
-
+        
         local Ripple = Instance.new("Frame", ClipContainer)
-        Ripple.BackgroundColor3 = THEME_ORANGE
+        Ripple.BackgroundColor3 = THEME_ORANGE 
         Ripple.BackgroundTransparency = 0.4
         Ripple.Position = UDim2.new(0, X, 0, Y)
         Ripple.AnchorPoint = Vector2.new(0.5, 0.5)
         Instance.new("UICorner", Ripple).CornerRadius = UDim.new(1, 0)
-
+        
         local targetSize = math.max(Button.AbsoluteSize.X, Button.AbsoluteSize.Y) * 1.6
         TweenService:Create(Ripple, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Size = UDim2.new(0, targetSize, 0, targetSize),
@@ -737,9 +558,10 @@ function AxisUI:CreateButton(ParentFrame, Options)
         }):Play()
         task.delay(0.45, function() Ripple:Destroy() end)
     end)
-
+    
     Button.MouseButton1Click:Connect(callback)
-
+    
+    -- [🔗 ربط القفل الشامل التلقائي]
     if Options.Locked then
         local success, LockModule = pcall(function()
             return loadstring(game:HttpGet("https://raw.githubusercontent.com/iamKernelK/Axis-UI/refs/heads/main/Lock.lua"))()
@@ -748,39 +570,45 @@ function AxisUI:CreateButton(ParentFrame, Options)
             LockModule.Apply(Button, Options)
         end
     end
-
+    
     return Button
 end
 
-===============END===============
+return ButtonModule
+local TweenService = game:GetService("TweenService")
+local ToggleModule = {}
 
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      TOGGLE (Switch On/Off)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
+-- الألوان الموحدة
+local THEME_ORANGE = Color3.fromRGB(255, 140, 0)
+local ELEMENT_BG = Color3.fromRGB(20, 15, 12)
+local ELEMENT_HOVER = Color3.fromRGB(28, 18, 11)
+local TEXT_COLOR = Color3.fromRGB(255, 255, 255)
 
-function AxisUI:CreateToggle(ParentFrame, Options)
+function ToggleModule.Create(ParentFrame, Options)
     local TName = Options.Name or "Toggle"
-    local TType = string.lower(Options.Type or "default")
+    -- تحويل النوع إلى حروف صغيرة لتجنب أخطاء الكتابة (box أو default)
+    local TType = string.lower(Options.Type or "default") 
     local State = Options.Default or false
     local Callback = Options.Callback or function() end
-
+    
+    -- نظام الأيقونات
     local IconId = Options.Icon
     local Pos = Options.Pos or "None"
     local hasLeft = (Pos == "Left" or Pos == "Both") and IconId ~= nil
     local hasRight = (Pos == "Right" or Pos == "Both") and IconId ~= nil
 
+    -- 1. الحاوية الأساسية (نفس شكل الزر بالضبط)
     local ToggleFrame = Instance.new("Frame")
     ToggleFrame.Name = TName .. "_Toggle"
     ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
     ToggleFrame.BackgroundColor3 = ELEMENT_BG
     ToggleFrame.Parent = ParentFrame
-
+    
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 8)
     Corner.Parent = ToggleFrame
 
+    -- إطار النبض
     local Stroke = Instance.new("UIStroke")
     Stroke.Color = THEME_ORANGE
     Stroke.Thickness = 1
@@ -789,12 +617,14 @@ function AxisUI:CreateToggle(ParentFrame, Options)
     Stroke.Parent = ToggleFrame
     TweenService:Create(Stroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.2}):Play()
 
+    -- 2. زر التفاعل (يغطي الحاوية بالكامل)
     local InteractBtn = Instance.new("TextButton")
     InteractBtn.Size = UDim2.new(1, 0, 1, 0)
     InteractBtn.BackgroundTransparency = 1
     InteractBtn.Text = ""
     InteractBtn.Parent = ToggleFrame
 
+    -- 3. الأيقونات والنص
     local titleOffset = 15
     if hasLeft then
         local LeftIcon = Instance.new("ImageLabel")
@@ -805,7 +635,7 @@ function AxisUI:CreateToggle(ParentFrame, Options)
         LeftIcon.Image = IconId
         LeftIcon.ImageColor3 = THEME_ORANGE
         LeftIcon.Parent = ToggleFrame
-        titleOffset = 45
+        titleOffset = 45 -- إزاحة النص إذا كانت هناك أيقونة
     end
 
     local rightOffset = -15
@@ -818,7 +648,7 @@ function AxisUI:CreateToggle(ParentFrame, Options)
         RightIcon.Image = IconId
         RightIcon.ImageColor3 = THEME_ORANGE
         RightIcon.Parent = ToggleFrame
-        rightOffset = -45
+        rightOffset = -45 -- إزاحة زر التوجل إذا كانت هناك أيقونة يمنى
     end
 
     local Title = Instance.new("TextLabel")
@@ -826,12 +656,13 @@ function AxisUI:CreateToggle(ParentFrame, Options)
     Title.Position = UDim2.new(0, titleOffset, 0, 0)
     Title.BackgroundTransparency = 1
     Title.Text = TName
-    Title.TextColor3 = TEXT_SELECTED
+    Title.TextColor3 = TEXT_COLOR
     Title.Font = Enum.Font.GothamMedium
     Title.TextSize = 15
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = ToggleFrame
 
+    -- 4. تصميم التوجل بناءً على النوع
     if TType == "box" then
         local Box = Instance.new("Frame")
         Box.Size = UDim2.new(0, 24, 0, 24)
@@ -850,8 +681,8 @@ function AxisUI:CreateToggle(ParentFrame, Options)
         Check.AnchorPoint = Vector2.new(0.5, 0.5)
         Check.Position = UDim2.new(0.5, 0, 0.5, 0)
         Check.BackgroundTransparency = 1
-        Check.Image = "rbxassetid://6257079049"
-        Check.ImageColor3 = Color3.fromRGB(20, 15, 12)
+        Check.Image = "rbxassetid://6257079049" -- الأيدي الذي طلبته
+        Check.ImageColor3 = Color3.fromRGB(20, 15, 12) -- لون الصح داكن ليتناسب مع الخلفية البرتقالية
         Check.Parent = Box
 
         local function Update()
@@ -868,7 +699,9 @@ function AxisUI:CreateToggle(ParentFrame, Options)
 
         InteractBtn.MouseButton1Click:Connect(function() State = not State; Update(); Callback(State) end)
         Update()
+
     else
+        -- Default (الشكل البيضاوي)
         local Pill = Instance.new("Frame")
         Pill.Size = UDim2.new(0, 44, 0, 22)
         Pill.Position = UDim2.new(1, rightOffset, 0.5, 0)
@@ -896,339 +729,193 @@ function AxisUI:CreateToggle(ParentFrame, Options)
         Update()
     end
 
+    -- تأثيرات الماوس
     InteractBtn.MouseEnter:Connect(function() TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_HOVER}):Play() end)
     InteractBtn.MouseLeave:Connect(function() TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_BG}):Play() end)
 
     return ToggleFrame
 end
 
-===============END===============
+return ToggleModule
+local TweenService = game:GetService("TweenService")
+local SectionModule = {}
 
+-- ==========================================
+-- 🎨 ألوان هادئة واحترافية (بدون نيون أو بهرجة)
+-- ==========================================
+local THEME = {
+    ContainerBg    = Color3.fromRGB(25, 25, 25), -- خلفية السيكشن وهو مفتوح
+    HeaderBg       = Color3.fromRGB(30, 30, 30), -- خلفية الزر
+    HeaderHover    = Color3.fromRGB(38, 38, 38), -- لون الزر عند مرور الماوس
+    Text           = Color3.fromRGB(240, 240, 240), -- أبيض هادئ
+    Icon           = Color3.fromRGB(170, 170, 170)  -- رمادي فاتح للسهم
+}
 
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      SLIDER (Value Slider)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
+function SectionModule.Create(ParentFrame, SectionName)
+    local isExpanded = false
+    local headerHeight = 32 -- حجم أنحف وأكثر احترافية
+    
+    -- 1. الحاوية الرئيسية
+    local Container = Instance.new("Frame")
+    Container.Name = SectionName .. "_Section"
+    Container.Size = UDim2.new(1, 0, 0, headerHeight)
+    Container.BackgroundColor3 = THEME.ContainerBg
+    Container.ClipsDescendants = true 
+    Container.Parent = ParentFrame
+    
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 5)
 
-function AxisUI:CreateSlider(Tab, Options)
-    local Name = Options.Name or "Slider"
-    local Min = Options.Min or 0
-    local Max = Options.Max or 100
-    local Default = Options.Default or Min
-    local IconID = Options.Icon
-    local Callback = Options.Callback or function() end
+    -- 2. زر الهيدر
+    local HeaderBtn = Instance.new("TextButton")
+    HeaderBtn.Size = UDim2.new(1, 0, 0, headerHeight)
+    HeaderBtn.BackgroundColor3 = THEME.HeaderBg
+    HeaderBtn.AutoButtonColor = false
+    HeaderBtn.Text = ""
+    HeaderBtn.Parent = Container
+    
+    Instance.new("UICorner", HeaderBtn).CornerRadius = UDim.new(0, 5)
 
-    local SliderContainer = Instance.new("Frame", Tab)
-    SliderContainer.Size = UDim2.new(1, -20, 0, 50)
-    SliderContainer.BackgroundTransparency = 1
-
-    local Header = Instance.new("Frame", SliderContainer)
-    Header.Size = UDim2.new(1, 0, 0, 20)
-    Header.BackgroundTransparency = 1
-
-    local TitleOffset = 5
-    if IconID then
-        local Icon = Instance.new("ImageLabel", Header)
-        Icon.Size = UDim2.new(0, 16, 0, 16)
-        Icon.Position = UDim2.new(0, 5, 0.5, -8)
-        Icon.BackgroundTransparency = 1
-        Icon.Image = IconID
-        Icon.ImageColor3 = THEME_ORANGE
-        TitleOffset = 26
-    end
-
-    local TitleLabel = Instance.new("TextLabel", Header)
-    TitleLabel.Size = UDim2.new(1, -60, 1, 0)
-    TitleLabel.Position = UDim2.new(0, TitleOffset, 0, 0)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = Name
-    TitleLabel.TextColor3 = TEXT_SELECTED
-    TitleLabel.Font = Enum.Font.GothamMedium
-    TitleLabel.TextSize = 13
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-    local ValueDisplay = Instance.new("TextLabel", Header)
-    ValueDisplay.Size = UDim2.new(0, 40, 1, 0)
-    ValueDisplay.Position = UDim2.new(1, -45, 0, 0)
-    ValueDisplay.BackgroundTransparency = 1
-    ValueDisplay.Text = tostring(Default)
-    ValueDisplay.TextColor3 = THEME_ORANGE
-    ValueDisplay.Font = Enum.Font.GothamBold
-    ValueDisplay.TextSize = 13
-    ValueDisplay.TextXAlignment = Enum.TextXAlignment.Right
-
-    local TrackArea = Instance.new("Frame", SliderContainer)
-    TrackArea.Size = UDim2.new(1, -10, 0, 20)
-    TrackArea.Position = UDim2.new(0, 5, 0, 25)
-    TrackArea.BackgroundTransparency = 1
-
-    local Track = Instance.new("Frame", TrackArea)
-    Track.Size = UDim2.new(1, 0, 0, 4)
-    Track.Position = UDim2.new(0, 0, 0.5, -2)
-    Track.BackgroundColor3 = TRACK_BLACK
-    Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
-
-    local Fill = Instance.new("Frame", Track)
-    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0)
-    Fill.BackgroundColor3 = THEME_ORANGE
-    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
-
-    local Thumb = Instance.new("ImageLabel", Track)
-    Thumb.Size = UDim2.new(0, 32, 0, 18)
-    Thumb.Position = UDim2.new((Default - Min) / (Max - Min), 0, 0.5, 0)
-    Thumb.AnchorPoint = Vector2.new(0.5, 0.5)
-    Thumb.BackgroundTransparency = 1
-    Thumb.Image = "rbxassetid://125083578015333"
-    Thumb.ImageColor3 = TEXT_SELECTED
-    Thumb.ScaleType = Enum.ScaleType.Fit
-
-    local Dragging = false
-    local TargetPct = (Default - Min) / (Max - Min)
-    local CurrentPct = TargetPct
-    local Mouse = Players.LocalPlayer:GetMouse()
-
-    Thumb.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Dragging = true
-            TweenService:Create(Thumb, TweenInfo.new(0.2), {Size = UDim2.new(0, 36, 0, 22)}):Play()
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if Dragging then
-                Dragging = false
-                TweenService:Create(Thumb, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 18)}):Play()
-            end
-        end
-    end)
-
-    RunService.RenderStepped:Connect(function()
-        if Dragging then
-            local pos = math.clamp((Mouse.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
-            TargetPct = pos
-        end
-
-        CurrentPct = CurrentPct + (TargetPct - CurrentPct) * 0.4
-        if math.abs(TargetPct - CurrentPct) < 0.001 then CurrentPct = TargetPct end
-
-        Thumb.Position = UDim2.new(CurrentPct, 0, 0.5, 0)
-        Fill.Size = UDim2.new(CurrentPct, 0, 1, 0)
-
-        local val = math.floor(Min + (CurrentPct * (Max - Min)))
-        ValueDisplay.Text = tostring(val)
-
-        if Dragging or math.abs(TargetPct - CurrentPct) > 0.001 then
-            Callback(val)
-        end
-    end)
-
-    return SliderContainer
-end
-
-===============END===============
-
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      DROPDOWN (Selection Menu)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
-
-function AxisUI:CreateDropdown(ParentFrame, Options)
-    local Name = Options.Name or "Dropdown"
-    local Items = Options.Items or {}
-    local Default = Options.Default or (Items[1] or "Select...")
-    local Callback = Options.Callback or function() end
-    local IconId = Options.Icon
-
-    local DropdownFrame = Instance.new("Frame")
-    DropdownFrame.Name = Name .. "_Dropdown"
-    DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
-    DropdownFrame.BackgroundColor3 = ELEMENT_BG
-    DropdownFrame.Parent = ParentFrame
-
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = DropdownFrame
-
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Color = THEME_ORANGE
-    Stroke.Thickness = 1
-    Stroke.Transparency = 0.8
-    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Stroke.Parent = DropdownFrame
-
+    -- 3. نص السيكشن
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -180, 1, 0)
-    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Position = UDim2.new(0, 12, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = Name
-    Title.TextColor3 = TEXT_SELECTED
+    Title.Text = SectionName
+    Title.TextColor3 = THEME.Text
     Title.Font = Enum.Font.GothamMedium
-    Title.TextSize = 15
+    Title.TextSize = 13
     Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = DropdownFrame
+    Title.Parent = HeaderBtn
 
-    -- Selected Value Display
-    local ValueBtn = Instance.new("TextButton")
-    ValueBtn.Size = UDim2.new(0, 140, 0, 28)
-    ValueBtn.Position = UDim2.new(1, -15, 0.5, 0)
-    ValueBtn.AnchorPoint = Vector2.new(1, 0.5)
-    ValueBtn.BackgroundColor3 = Color3.fromRGB(15, 10, 8)
-    ValueBtn.Text = Default
-    ValueBtn.TextColor3 = THEME_ORANGE
-    ValueBtn.Font = Enum.Font.GothamSemibold
-    ValueBtn.TextSize = 13
-    ValueBtn.AutoButtonColor = false
-    ValueBtn.Parent = DropdownFrame
-    Instance.new("UICorner", ValueBtn).CornerRadius = UDim.new(0, 6)
+    -- 4. السهم (أيقونة نظيفة وبسيطة)
+    local Arrow = Instance.new("ImageLabel")
+    Arrow.Size = UDim2.new(0, 14, 0, 14)
+    Arrow.Position = UDim2.new(1, -24, 0.5, -7)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Image = "rbxassetid://10392248278" -- أيقونة سهم أنيقة
+    Arrow.ImageColor3 = THEME.Icon
+    Arrow.Rotation = 0 
+    Arrow.Parent = HeaderBtn
 
-    local ValueStroke = Instance.new("UIStroke", ValueBtn)
-    ValueStroke.Color = THEME_ORANGE
-    ValueStroke.Thickness = 1
-    ValueStroke.Transparency = 0.5
+    -- 5. حاوية العناصر المخفية
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Size = UDim2.new(1, 0, 0, 0)
+    ContentFrame.Position = UDim2.new(0, 0, 0, headerHeight) 
+    ContentFrame.BackgroundTransparency = 1
+    ContentFrame.Parent = Container
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 4) -- مسافة صغيرة بين الأزرار
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    UIListLayout.Parent = ContentFrame
 
-    local ArrowIcon = Instance.new("ImageLabel", ValueBtn)
-    ArrowIcon.Size = UDim2.new(0, 12, 0, 12)
-    ArrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
-    ArrowIcon.AnchorPoint = Vector2.new(1, 0.5)
-    ArrowIcon.BackgroundTransparency = 1
-    ArrowIcon.Image = "rbxassetid://10392248278"
-    ArrowIcon.ImageColor3 = THEME_ORANGE
-    ArrowIcon.Rotation = 90
-
-    -- Dropdown List Container
-    local ListContainer = Instance.new("Frame")
-    ListContainer.Name = "DropdownList"
-    ListContainer.Size = UDim2.new(0, 140, 0, 0)
-    ListContainer.Position = UDim2.new(1, -15, 0, 42)
-    ListContainer.AnchorPoint = Vector2.new(1, 0)
-    ListContainer.BackgroundColor3 = Color3.fromRGB(15, 10, 8)
-    ListContainer.BorderSizePixel = 0
-    ListContainer.ClipsDescendants = true
-    ListContainer.Visible = false
-    ListContainer.ZIndex = 10
-    ListContainer.Parent = DropdownFrame
-    Instance.new("UICorner", ListContainer).CornerRadius = UDim.new(0, 6)
-
-    local ListStroke = Instance.new("UIStroke", ListContainer)
-    ListStroke.Color = THEME_ORANGE
-    ListStroke.Thickness = 1
-    ListStroke.Transparency = 0.5
-
-    local ListLayout = Instance.new("UIListLayout", ListContainer)
-    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ListLayout.Padding = UDim.new(0, 2)
-
-    local ListPadding = Instance.new("UIPadding", ListContainer)
-    ListPadding.PaddingTop = UDim.new(0, 4)
-    ListPadding.PaddingBottom = UDim.new(0, 4)
-    ListPadding.PaddingLeft = UDim.new(0, 4)
-    ListPadding.PaddingRight = UDim.new(0, 4)
-
-    local isOpen = false
-
-    local function BuildList()
-        for _, child in ipairs(ListContainer:GetChildren()) do
-            if child:IsA("TextButton") then child:Destroy() end
-        end
-
-        for _, item in ipairs(Items) do
-            local ItemBtn = Instance.new("TextButton")
-            ItemBtn.Size = UDim2.new(1, 0, 0, 28)
-            ItemBtn.BackgroundColor3 = Color3.fromRGB(20, 15, 12)
-            ItemBtn.Text = item
-            ItemBtn.TextColor3 = TEXT_COLOR
-            ItemBtn.Font = Enum.Font.GothamMedium
-            ItemBtn.TextSize = 12
-            ItemBtn.AutoButtonColor = false
-            ItemBtn.Parent = ListContainer
-            Instance.new("UICorner", ItemBtn).CornerRadius = UDim.new(0, 4)
-
-            ItemBtn.MouseEnter:Connect(function()
-                TweenService:Create(ItemBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 25, 18)}):Play()
-                TweenService:Create(ItemBtn, TweenInfo.new(0.15), {TextColor3 = THEME_ORANGE}):Play()
-            end)
-            ItemBtn.MouseLeave:Connect(function()
-                TweenService:Create(ItemBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(20, 15, 12)}):Play()
-                TweenService:Create(ItemBtn, TweenInfo.new(0.15), {TextColor3 = TEXT_COLOR}):Play()
-            end)
-            ItemBtn.MouseButton1Click:Connect(function()
-                ValueBtn.Text = item
-                Callback(item)
-                isOpen = false
-                TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {Rotation = 90}):Play()
-                TweenService:Create(ListContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 140, 0, 0)}):Play()
-                task.delay(0.2, function() ListContainer.Visible = false end)
-            end)
-        end
-    end
-
-    BuildList()
-
-    ValueBtn.MouseButton1Click:Connect(function()
-        isOpen = not isOpen
-        if isOpen then
-            ListContainer.Visible = true
-            local listHeight = math.min(#Items * 30 + 8, 200)
-            TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {Rotation = -90}):Play()
-            TweenService:Create(ListContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 140, 0, listHeight)}):Play()
-        else
-            TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {Rotation = 90}):Play()
-            TweenService:Create(ListContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 140, 0, 0)}):Play()
-            task.delay(0.2, function() ListContainer.Visible = false end)
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0, 6)
+    UIPadding.PaddingBottom = UDim.new(0, 6)
+    UIPadding.Parent = ContentFrame
+    
+    -- ==========================================
+    -- ⚡ تفاعلات سريعة جداً (Snappy Animations)
+    -- ==========================================
+    
+    HeaderBtn.MouseEnter:Connect(function()
+        TweenService:Create(HeaderBtn, TweenInfo.new(0.15), {BackgroundColor3 = THEME.HeaderHover}):Play()
+    end)
+    
+    HeaderBtn.MouseLeave:Connect(function()
+        TweenService:Create(HeaderBtn, TweenInfo.new(0.15), {BackgroundColor3 = THEME.HeaderBg}):Play()
+    end)
+    
+    HeaderBtn.MouseButton1Click:Connect(function()
+        isExpanded = not isExpanded
+        
+        -- سهم سريع (0.2 ثانية)
+        TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Rotation = isExpanded and 90 or 0
+        }):Play()
+        
+        local targetHeight = isExpanded and (headerHeight + UIListLayout.AbsoluteContentSize.Y + 12) or headerHeight
+        
+        -- فتح/إغلاق سريع وسلس بدون ارتداد بطيء (0.25 ثانية)
+        TweenService:Create(Container, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, 0, 0, targetHeight)
+        }):Play()
+    end)
+    
+    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if isExpanded then
+            Container.Size = UDim2.new(1, 0, 0, headerHeight + UIListLayout.AbsoluteContentSize.Y + 12)
         end
     end)
-
-    DropdownFrame.MouseEnter:Connect(function()
-        TweenService:Create(DropdownFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_HOVER}):Play()
-    end)
-    DropdownFrame.MouseLeave:Connect(function()
-        TweenService:Create(DropdownFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_BG}):Play()
-    end)
-
-    -- Close dropdown when clicking outside
-    UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and isOpen then
-            local pos = input.Position
-            local absPos = ListContainer.AbsolutePosition
-            local absSize = ListContainer.AbsoluteSize
-            if pos.X < absPos.X or pos.X > absPos.X + absSize.X or pos.Y < absPos.Y or pos.Y > absPos.Y + absSize.Y then
-                local btnPos = ValueBtn.AbsolutePosition
-                local btnSize = ValueBtn.AbsoluteSize
-                if pos.X < btnPos.X or pos.X > btnPos.X + btnSize.X or pos.Y < btnPos.Y or pos.Y > btnPos.Y + btnSize.Y then
-                    isOpen = false
-                    TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {Rotation = 90}):Play()
-                    TweenService:Create(ListContainer, TweenInfo.new(0.2), {Size = UDim2.new(0, 140, 0, 0)}):Play()
-                    task.delay(0.2, function() ListContainer.Visible = false end)
-                end
-            end
-        end
-    end)
-
-    return DropdownFrame
+    
+    return ContentFrame
 end
 
-===============END===============
+return SectionModule
+-- Section.lua
+-- موديول القسم المحدث: يعتمد على المسافات وحجم الخط بدون خطوط فاصلة
 
+local THEME_ORANGE = Color3.fromRGB(255, 140, 0)
 
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      TEXTBOX (Text Input)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
+return {
+    Create = function(Container, Config)
+        -- جلب اسم القسم من الإعدادات
+        local SectionName = Config.Name or "Section"
 
-function AxisUI:CreateTextbox(ParentFrame, Options)
+        -- 1. الإطار الأساسي للقسم (يعمل كمسافة فاصلة - Spacing)
+        local SectionFrame = Instance.new("Frame")
+        SectionFrame.Name = SectionName .. "_Section"
+        -- الارتفاع 38: يعطي مسافة ممتازة وموزونة بين العناصر
+        SectionFrame.Size = UDim2.new(1, 0, 0, 38) 
+        SectionFrame.BackgroundTransparency = 1
+        SectionFrame.Parent = Container
+
+        -- 2. عنوان القسم (النص)
+        local Title = Instance.new("TextLabel")
+        Title.Name = "Title"
+        Title.Size = UDim2.new(1, -30, 1, 0) 
+        Title.Position = UDim2.new(0, 15, 0, 0) -- إزاحة ليتماشى مع بداية الأزرار
+        Title.BackgroundTransparency = 1
+        Title.Text = SectionName
+        Title.TextColor3 = THEME_ORANGE
+        Title.Font = Enum.Font.GothamBold
+        
+        -- تكبير حجم الخط كما طلبت ليصبح بارزاً
+        Title.TextSize = 15 
+        
+        Title.TextXAlignment = Enum.TextXAlignment.Left
+        -- محاذاة النص للأسفل: لكي يكون الفراغ في الأعلى، والنص قريب من العناصر التي أسفله
+        Title.TextYAlignment = Enum.TextYAlignment.Bottom 
+        
+        Title.Parent = SectionFrame
+
+        -- تم حذف الخط الفاصل نهائياً والاكتفاء بالمسافة والنص
+
+        return SectionFrame
+    end
+}
+local TweenService = game:GetService("TweenService")
+local TextboxModule = {}
+
+-- الألوان الموحدة
+local THEME_ORANGE = Color3.fromRGB(255, 140, 0)
+local ELEMENT_BG = Color3.fromRGB(20, 15, 12)
+local ELEMENT_HOVER = Color3.fromRGB(28, 18, 11)
+local TEXT_COLOR = Color3.fromRGB(255, 255, 255)
+
+function TextboxModule.Create(ParentFrame, Options)
     local TName = Options.Name or "Textbox Element"
     local Callback = Options.Callback or function() end
     local Placeholder = Options.Placeholder or "Type here..."
-
+    
+    -- نظام الأيقونات
     local IconId = Options.Icon
     local Pos = Options.Pos or "None"
     local hasLeft = (Pos == "Left" or Pos == "Both") and IconId ~= nil
     local hasRight = (Pos == "Right" or Pos == "Both") and IconId ~= nil
 
+    -- 1. الحاوية الأساسية (نفس شكل الزر)
     local TextboxFrame = Instance.new("Frame")
     TextboxFrame.Name = TName .. "_Textbox"
     TextboxFrame.Size = UDim2.new(1, 0, 0, 42)
@@ -1239,6 +926,7 @@ function AxisUI:CreateTextbox(ParentFrame, Options)
     Corner.CornerRadius = UDim.new(0, 8)
     Corner.Parent = TextboxFrame
 
+    -- إطار النبض
     local Stroke = Instance.new("UIStroke")
     Stroke.Color = THEME_ORANGE
     Stroke.Thickness = 1
@@ -1247,6 +935,7 @@ function AxisUI:CreateTextbox(ParentFrame, Options)
     Stroke.Parent = TextboxFrame
     TweenService:Create(Stroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.2}):Play()
 
+    -- 2. الأيقونات والنص
     local titleOffset = 15
     if hasLeft then
         local LeftIcon = Instance.new("ImageLabel")
@@ -1257,7 +946,7 @@ function AxisUI:CreateTextbox(ParentFrame, Options)
         LeftIcon.Image = IconId
         LeftIcon.ImageColor3 = THEME_ORANGE
         LeftIcon.Parent = TextboxFrame
-        titleOffset = 45
+        titleOffset = 45 
     end
 
     local rightOffset = -15
@@ -1278,17 +967,18 @@ function AxisUI:CreateTextbox(ParentFrame, Options)
     Title.Position = UDim2.new(0, titleOffset, 0, 0)
     Title.BackgroundTransparency = 1
     Title.Text = TName
-    Title.TextColor3 = TEXT_SELECTED
+    Title.TextColor3 = TEXT_COLOR
     Title.Font = Enum.Font.GothamMedium
     Title.TextSize = 15
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TextboxFrame
 
+    -- 3. مربع إدخال النص الفعلي
     local InputBox = Instance.new("TextBox")
     InputBox.Size = UDim2.new(0, 120, 0, 28)
     InputBox.Position = UDim2.new(1, rightOffset, 0.5, 0)
     InputBox.AnchorPoint = Vector2.new(1, 0.5)
-    InputBox.BackgroundColor3 = Color3.fromRGB(15, 10, 8)
+    InputBox.BackgroundColor3 = Color3.fromRGB(15, 10, 8) -- أغمق قليلاً من الحاوية
     InputBox.Text = ""
     InputBox.PlaceholderText = Placeholder
     InputBox.TextColor3 = THEME_ORANGE
@@ -1308,12 +998,9 @@ function AxisUI:CreateTextbox(ParentFrame, Options)
     InputStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     InputStroke.Parent = InputBox
 
-    TextboxFrame.MouseEnter:Connect(function()
-        TweenService:Create(TextboxFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_HOVER}):Play()
-    end)
-    TextboxFrame.MouseLeave:Connect(function()
-        TweenService:Create(TextboxFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_BG}):Play()
-    end)
+    -- 4. التفاعلات
+    TextboxFrame.MouseEnter:Connect(function() TweenService:Create(TextboxFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_HOVER}):Play() end)
+    TextboxFrame.MouseLeave:Connect(function() TweenService:Create(TextboxFrame, TweenInfo.new(0.2), {BackgroundColor3 = ELEMENT_BG}):Play() end)
 
     InputBox.Focused:Connect(function()
         TweenService:Create(InputStroke, TweenInfo.new(0.2), {Transparency = 0}):Play()
@@ -1329,87 +1016,11 @@ function AxisUI:CreateTextbox(ParentFrame, Options)
     return TextboxFrame
 end
 
-===============END===============
+return TextboxModule
+local TweenService = game:GetService("TweenService")
+local ColorPickerModule = {}
 
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      INFO (Display Label)
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
-
-function AxisUI:CreateInfo(ParentFrame, Options)
-    local Name = Options.Name or "Info"
-    local Description = Options.Description or ""
-    local IconId = Options.Icon
-    local TxtColor = Options.TextColor or TEXT_SELECTED
-    local DescColor = Options.DescColor or Color3.fromRGB(130, 130, 130)
-
-    local InfoFrame = Instance.new("Frame")
-    InfoFrame.Name = Name .. "_Info"
-    InfoFrame.Size = UDim2.new(1, 0, 0, Description ~= "" and 52 or 32)
-    InfoFrame.BackgroundColor3 = ELEMENT_BG
-    InfoFrame.BackgroundTransparency = 0.5
-    InfoFrame.Parent = ParentFrame
-
-    Instance.new("UICorner", InfoFrame).CornerRadius = UDim.new(0, 8)
-
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Color = THEME_ORANGE
-    Stroke.Thickness = 1
-    Stroke.Transparency = 0.9
-    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Stroke.Parent = InfoFrame
-
-    local titleOffset = 15
-    if IconId then
-        local LeftIcon = Instance.new("ImageLabel")
-        LeftIcon.Size = UDim2.new(0, 20, 0, 20)
-        LeftIcon.Position = UDim2.new(0, 15, 0, Description ~= "" and 10 or 6)
-        LeftIcon.AnchorPoint = Vector2.new(0, 0)
-        LeftIcon.BackgroundTransparency = 1
-        LeftIcon.Image = IconId
-        LeftIcon.ImageColor3 = THEME_ORANGE
-        LeftIcon.Parent = InfoFrame
-        titleOffset = 45
-    end
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -titleOffset - 10, 0, 20)
-    Title.Position = UDim2.new(0, titleOffset, 0, 6)
-    Title.BackgroundTransparency = 1
-    Title.Text = Name
-    Title.TextColor3 = TxtColor
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 13
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = InfoFrame
-
-    if Description ~= "" then
-        local Desc = Instance.new("TextLabel")
-        Desc.Size = UDim2.new(1, -titleOffset - 10, 0, 18)
-        Desc.Position = UDim2.new(0, titleOffset, 0, 28)
-        Desc.BackgroundTransparency = 1
-        Desc.Text = Description
-        Desc.TextColor3 = DescColor
-        Desc.Font = Enum.Font.GothamMedium
-        Desc.TextSize = 11
-        Desc.TextXAlignment = Enum.TextXAlignment.Left
-        Desc.TextWrapped = true
-        Desc.Parent = InfoFrame
-    end
-
-    return InfoFrame
-end
-
-===============END===============
-
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
---                      COLOR PICKER
--- ═══════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════
-
-function AxisUI:CreateColorPicker(ParentFrame, Options)
+function ColorPickerModule.Create(ParentFrame, Options)
     local Name = Options.Name or "Color Picker"
     local Default = Options.Default or Color3.fromRGB(255, 255, 255)
     local Callback = Options.Callback or function() end
@@ -1445,6 +1056,7 @@ function AxisUI:CreateColorPicker(ParentFrame, Options)
     InteractBtn.Parent = MainFrame
 
     InteractBtn.MouseButton1Click:Connect(function()
+        -- يمكنك لاحقاً ربطها بنافذة ألوان حقيقية، هنا يختار لون برتقالي عشوائي للتجربة
         local newColor = Color3.fromRGB(math.random(200,255), math.random(100,150), 0)
         TweenService:Create(ColorShow, TweenInfo.new(0.3), {BackgroundColor3 = newColor}):Play()
         Callback(newColor)
@@ -1453,10 +1065,160 @@ function AxisUI:CreateColorPicker(ParentFrame, Options)
     return MainFrame
 end
 
-===============END===============
+return ColorPickerModule
+local Slider = {} 
 
--- ═══════════════════════════════════════════════════════════════
---                    RETURN LIBRARY
--- ═══════════════════════════════════════════════════════════════
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+
+function Slider.Create(Tab, Options)
+    local Name = Options.Name or "Slider"
+    local Min = Options.Min or 0
+    local Max = Options.Max or 100
+    local Default = Options.Default or Min
+    local IconID = Options.Icon -- ميزة إضافة أيقونة على اليسار
+    local Callback = Options.Callback or function() end
+
+    -- الألوان متطابقة مع الستايل البرتقالي الخاص بك 100%
+    local THEME_ORANGE = Color3.fromRGB(255, 140, 0) 
+    local TRACK_BLACK = Color3.fromRGB(25, 25, 25)
+    local TEXT_WHITE = Color3.fromRGB(255, 255, 255)
+
+    -- 1. الحاوية الأساسية
+    local SliderContainer = Instance.new("Frame", Tab)
+    SliderContainer.Size = UDim2.new(1, -20, 0, 50) -- الارتفاع متناسق وبدون مساحة فارغة للـ Bubble
+    SliderContainer.BackgroundTransparency = 1
+
+    -- 2. قسم العنوان (يحتوي على النص، الأيقونة، والقيمة)
+    local Header = Instance.new("Frame", SliderContainer)
+    Header.Size = UDim2.new(1, 0, 0, 20)
+    Header.BackgroundTransparency = 1
+
+    -- إذا حطيت أيقونة، راح تترتب تلقائياً
+    local TitleOffset = 5
+    if IconID then
+        local Icon = Instance.new("ImageLabel", Header)
+        Icon.Size = UDim2.new(0, 16, 0, 16)
+        Icon.Position = UDim2.new(0, 5, 0.5, -8)
+        Icon.BackgroundTransparency = 1
+        Icon.Image = IconID
+        Icon.ImageColor3 = THEME_ORANGE
+        TitleOffset = 26 -- إبعاد النص لليمين عشان الأيقونة تاخذ راحتها
+    end
+
+    local TitleLabel = Instance.new("TextLabel", Header)
+    TitleLabel.Size = UDim2.new(1, -60, 1, 0)
+    TitleLabel.Position = UDim2.new(0, TitleOffset, 0, 0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = Name
+    TitleLabel.TextColor3 = TEXT_WHITE
+    TitleLabel.Font = Enum.Font.GothamMedium
+    TitleLabel.TextSize = 13
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ValueDisplay = Instance.new("TextLabel", Header)
+    ValueDisplay.Size = UDim2.new(0, 40, 1, 0)
+    ValueDisplay.Position = UDim2.new(1, -45, 0, 0)
+    ValueDisplay.BackgroundTransparency = 1
+    ValueDisplay.Text = tostring(Default)
+    ValueDisplay.TextColor3 = THEME_ORANGE
+    ValueDisplay.Font = Enum.Font.GothamBold
+    ValueDisplay.TextSize = 13
+    ValueDisplay.TextXAlignment = Enum.TextXAlignment.Right
+
+    -- 3. منطقة التحريك ومسار الـ Slider
+    local TrackArea = Instance.new("Frame", SliderContainer)
+    TrackArea.Size = UDim2.new(1, -10, 0, 20)
+    TrackArea.Position = UDim2.new(0, 5, 0, 25)
+    TrackArea.BackgroundTransparency = 1
+
+    local Track = Instance.new("Frame", TrackArea)
+    Track.Size = UDim2.new(1, 0, 0, 4)
+    Track.Position = UDim2.new(0, 0, 0.5, -2)
+    Track.BackgroundColor3 = TRACK_BLACK
+    Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
+
+    local Fill = Instance.new("Frame", Track)
+    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0)
+    Fill.BackgroundColor3 = THEME_ORANGE
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+
+    -- 4. المقبض (Thumb) - أصبح أعرض ولا يختفي
+    local Thumb = Instance.new("ImageLabel", Track)
+    Thumb.Size = UDim2.new(0, 32, 0, 18) -- مقاس عريض وممتاز (مستطيل بدلاً من مربع)
+    Thumb.Position = UDim2.new((Default - Min) / (Max - Min), 0, 0.5, 0)
+    Thumb.AnchorPoint = Vector2.new(0.5, 0.5)
+    Thumb.BackgroundTransparency = 1
+    Thumb.Image = "rbxassetid://125083578015333" 
+    Thumb.ImageColor3 = TEXT_WHITE
+    Thumb.ScaleType = Enum.ScaleType.Fit -- يحافظ على شكل الـ ID بدون تمطيط بشع
+
+    -- 5. المنطق والأنيميشن (بدون فقاعة)
+    local Dragging = false
+    local TargetPct = (Default - Min) / (Max - Min)
+    local CurrentPct = TargetPct
+    local Mouse = Players.LocalPlayer:GetMouse()
+
+    Thumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = true
+            -- أنيميشن احترافي: يكبر المقبض شوي عند المسك بدون ما يختفي
+            TweenService:Create(Thumb, TweenInfo.new(0.2), {Size = UDim2.new(0, 36, 0, 22)}):Play()
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if Dragging then
+                Dragging = false
+                -- يرجع لحجمه العريض الطبيعي عند الإفلات
+                TweenService:Create(Thumb, TweenInfo.new(0.2), {Size = UDim2.new(0, 32, 0, 18)}):Play()
+            end
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if Dragging then
+            local pos = math.clamp((Mouse.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+            TargetPct = pos
+        end
+        
+        
+        
+        
+        
+       
+       
+       
+       
+       
+       
+       
+       
+       
+        
+     
+      
+        CurrentPct = CurrentPct + (TargetPct - CurrentPct) * 0.4
+        
+        if math.abs(TargetPct - CurrentPct) < 0.001 then CurrentPct = TargetPct end
+
+        Thumb.Position = UDim2.new(CurrentPct, 0, 0.5, 0)
+        Fill.Size = UDim2.new(CurrentPct, 0, 1, 0)
+
+        local val = math.floor(Min + (CurrentPct * (Max - Min)))
+        ValueDisplay.Text = tostring(val) -- الرقم يتحدث مباشرة بجانب العنوان
+
+        if Dragging or math.abs(TargetPct - CurrentPct) > 0.001 then
+            Callback(val)
+        end
+    end)
+
+    return SliderContainer
+end
+
+return Slider
 
 return AxisUI
